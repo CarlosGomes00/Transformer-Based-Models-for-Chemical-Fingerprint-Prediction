@@ -7,15 +7,15 @@ The structure of the repository has been organized in a modular way to make it e
 
 ```
 └── Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/
-    ├── data/                       # Stores raw and processed data (It may be hidden in .gitignore)/
+    ├── data/                       # Stores raw and processed data (It may be hidden in .gitignore)
     │   ├── raw/                          # .mgf files
     │   ├── processed/                    # Extracted data (CSV, DataFrame, etc.)
     │   └── fingerprints/                 # Generated fingerprints
     ├── notebooks/                  # Jupyter notebooks for exploring and visualizing data/results
-    ├── src/                        # The project's main source code/
+    ├── src/                        # The project's main source code
     │   └── utils.py                      # Auxiliary and reusable functions
     ├── results/                    # Results achieved
-    ├── scripts/                    # Scripts for quick execution/
+    ├── scripts/                    # Scripts for quick execution
     │   ├── process_mgf.py                # Runs spectra extraction pipeline
     │   └── generate_fps.py               # Generates fingerprints from spectra
     ├── README.md
