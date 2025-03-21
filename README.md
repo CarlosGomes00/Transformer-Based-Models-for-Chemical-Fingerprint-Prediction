@@ -5,6 +5,7 @@ This repository contains the code and work developed for my master's thesis in B
 ## Repository structure
 The structure of the repository has been organized in a modular way to make it easier to navigate and understand the code. Each component of the workflow is organized in the following folders:
 
+```
 └── Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/
     ├── data/                       # Stores raw and processed data (It may be hidden in .gitignore)/
     │   ├── raw/                          # .mgf files
@@ -19,3 +20,4 @@ The structure of the repository has been organized in a modular way to make it e
     │   └── generate_fps.py               # Generates fingerprints from spectra
     ├── README.md
     └── .gitignore
+```
