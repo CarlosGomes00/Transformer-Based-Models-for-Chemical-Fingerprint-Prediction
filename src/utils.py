@@ -1,4 +1,4 @@
-# Colocar funções auxiliares e reutilizáveis que possam existir
+# Generic functions that can be reused
 
 import os
 
@@ -8,7 +8,7 @@ def path_check(mgf_data : str):
 
     Parameters:
         mgf_data : str
-            Path to the daset to be used
+            Path to the dataset to be used
     """
 
     if not os.path.exists(mgf_data):
