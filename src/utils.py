@@ -12,8 +12,8 @@ def path_check(mgf_data : str):
     """
 
     if not os.path.exists(mgf_data):
-        print(f"Erro: Não foi possivel encontrar o ficheiro {os.path.abspath(mgf_data)}")
+        print(f"Error: File could not be found {os.path.abspath(mgf_data)}")
     else:
-        print("Ficheiro encontrado!")
+        print("File found!")
 
     return
