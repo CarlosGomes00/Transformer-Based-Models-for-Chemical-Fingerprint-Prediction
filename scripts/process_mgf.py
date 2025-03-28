@@ -1,5 +1,5 @@
 from pyteomics import mgf
-import matplotlib.pyplot as plt
+
 
 
 def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
@@ -63,7 +63,7 @@ def mgf_read_all(mgf_data: str, num_spectra: int = 1):
 
 
 
-def mgf_get_spectra(mgf_data: str, num_spectra: int = None):
+def mgf_get_spectra(mgf_data: str, num_spectra: int = None) -> dict:
 
     """
     Read all the information about the spectra in a .mgf file and return it as a dictionary
@@ -90,39 +90,5 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None):
 
     return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
 
-
-
-def plot_spectrum(spectrum: dict, title: str = None):
-
-    """
-    Plots a spectrum based on the information in the .mgf file
-
-    Parameters:
-        spectrum : dict
-            A dictionary containing spectrum data (m/z and intensity arrays)
-        title : str
-            Title of the plot
-
-    Return:
-        MS/MS spectra
-    """
-
-    if type(spectrum) != dict:
-        raise TypeError("Spectrum must be a dictionary")
-
-    mz_values = spectrum['m/z array']
-    intensity_values = spectrum['intensity array']
-
-    if title is None:
-        title = spectrum["params"].get("spectrum_id")
-
-    plt.figure(figsize=(10, 5))
-    plt.bar(mz_values, intensity_values, width=0.5, color='red')
-    plt.xlabel("m/z")
-    plt.ylabel("Intensity")
-    plt.title(f"Mass Spectrum - {title}")
-    plt.show()
-
-    return
 
 
