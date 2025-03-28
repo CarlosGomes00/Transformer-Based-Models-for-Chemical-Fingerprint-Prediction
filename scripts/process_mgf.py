@@ -1,8 +1,8 @@
 from pyteomics import mgf
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 
-def mgf_headers_info(mgf_data: str, num_spectra: int = 3):
+def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
 
     """
     Reads the headers of the spectra in an .mgf file
@@ -12,7 +12,7 @@ def mgf_headers_info(mgf_data: str, num_spectra: int = 3):
         mgf_data : str
             Path to the dataset to be used
         num_spectra : int
-            Number of spectra info to be read, 3 by default
+            Number of spectra info to be read, 1 by default
 
     Returns:
         Some of the parameters for each spectrum
@@ -31,7 +31,7 @@ def mgf_headers_info(mgf_data: str, num_spectra: int = 3):
         print(f"Error reading .MGF file: {e}")
 
 
-def mgf_all_info(mgf_data: str, num_spectra: int = 3):
+def mgf_read_all(mgf_data: str, num_spectra: int = 1):
 
     """
     Read all the information about the spectra in a .mgf file
@@ -41,7 +41,7 @@ def mgf_all_info(mgf_data: str, num_spectra: int = 3):
         mgf_data : str
             Path to the dataset to be used
         num_spectra : int
-            Number of spectra info to be read, 3 by default
+            Number of spectra info to be read, 1 by default
 
     Returns:
         Information about each spectrum
@@ -62,6 +62,36 @@ def mgf_all_info(mgf_data: str, num_spectra: int = 3):
         print(f"Error reading .MGF file: {e}")
 
 
+
+def mgf_get_spectra(mgf_data: str, num_spectra: int = None):
+
+    """
+    Read all the information about the spectra in a .mgf file and return it as a dictionary
+    It is mainly used as a reading base for the spectra plot function
+
+    Parameters:
+        mgf_data : str
+            Path to the dataset to be used
+        num_spectra : int
+            Number of spectra info to be read. All by default
+
+    Returns:
+        Dictionary of each spectrum
+    """
+
+    spectra = list(mgf.read(mgf_data, index_by_scans=True))
+
+    if len(spectra) == 0:
+        print("Error reading .MGF file")
+        return None
+
+    if num_spectra is None:
+        return spectra
+
+    return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
+
+
+
 def plot_spectrum(spectrum: dict, title: str = None):
 
     """
@@ -72,7 +102,13 @@ def plot_spectrum(spectrum: dict, title: str = None):
             A dictionary containing spectrum data (m/z and intensity arrays)
         title : str
             Title of the plot
+
+    Return:
+        MS/MS spectra
     """
+
+    if type(spectrum) != dict:
+        raise TypeError("Spectrum must be a dictionary")
 
     mz_values = spectrum['m/z array']
     intensity_values = spectrum['intensity array']
@@ -88,3 +124,5 @@ def plot_spectrum(spectrum: dict, title: str = None):
     plt.show()
 
     return
+
+

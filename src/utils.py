@@ -2,6 +2,8 @@
 
 import os
 
+
+
 def path_check(mgf_data : str):
     """
     Checks if the path to the dataset has been found
@@ -17,3 +19,4 @@ def path_check(mgf_data : str):
         print("File found!")
 
     return
+
