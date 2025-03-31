@@ -35,9 +35,9 @@ def plot_spectrum(spectrum: dict, title: str = None):
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = "\plots"):
-    """"
-    Plots multiple mass spectra from a list of spectrum dictionaries and optionally saves them
+def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = r"\plots"):
+    """
+    Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
 
     Parameters:
         spectra : list of dict
@@ -47,7 +47,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
         save : int, optional
             If 1, saves the plots as JPG files. Default is 0
         save_path : str, optional
-            Path where plots will be saved, \plots by default
+            Path where plots will be saved, plots by default
 
     Returns:
         None
@@ -78,7 +78,6 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
         plt.ylabel("Intensity")
         plt.title(f"Mass Spectrum - {title}")
 
-
         if save:
             filename = os.path.join(save_path, f"{title}.jpg")
             plt.savefig(filename, dpi=300)
@@ -90,4 +89,4 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
 
     return
 
-#TODO Fix plot_spectra path saver parameter
+# TODO Fix plot_spectra path saver parameter / verify title parameter

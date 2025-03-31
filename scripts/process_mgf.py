@@ -3,7 +3,6 @@ from pyteomics import mgf
 
 
 def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
-
     """
     Reads the headers of the spectra in an .mgf file
     The main purpose of this function is to see if the iteration over the spectra is taking place properly
@@ -89,6 +88,3 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None) -> dict:
         return spectra
 
     return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
-
-
-
