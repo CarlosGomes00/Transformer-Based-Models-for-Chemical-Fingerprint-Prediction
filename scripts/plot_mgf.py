@@ -35,7 +35,7 @@ def plot_spectrum(spectrum: dict, title: str = None):
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = "\data\processed\plots"):
+def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = "\plots"):
     """"
     Plots multiple mass spectra from a list of spectrum dictionaries and optionally saves them
 
@@ -47,7 +47,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
         save : int, optional
             If 1, saves the plots as JPG files. Default is 0
         save_path : str, optional
-            Path where plots will be saved, \data\processed\plots by default
+            Path where plots will be saved, \plots by default
 
     Returns:
         None
@@ -68,7 +68,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
         intensity_values = spectrum['intensity array']
         title = spectrum["params"].get("spectrum_id", f"Spectrum {i+1}")
 
-        if not mz_values or not intensity_values:
+        if mz_values.size == 0 or intensity_values.size == 0:
             print(f"Spectrum {i+1} has no data to plot")
             continue
 
@@ -89,3 +89,5 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
             plt.show()
 
     return
+
+#TODO Fix plot_spectra path saver parameter
