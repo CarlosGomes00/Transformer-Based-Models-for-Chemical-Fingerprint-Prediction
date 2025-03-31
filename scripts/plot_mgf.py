@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
+import os
+
 
 def plot_spectrum(spectrum: dict, title: str = None):
-
     """
     Plots a spectrum based on the information in the .mgf file
 
@@ -33,10 +34,58 @@ def plot_spectrum(spectrum: dict, title: str = None):
 
     return
 
-def plot_spectra(spectra: list, num_spectra: int):
 
+def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = "\data\processed\plots"):
     """"
-    Recebe uma lista de dicionários e dá plot
+    Plots multiple mass spectra from a list of spectrum dictionaries and optionally saves them
+
+    Parameters:
+        spectra : list of dict
+            A list of dictionaries containing spectrum data (m/z and intensity arrays)
+        num_spectra : int, optional
+            The number of spectra to plot, all by default
+        save : int, optional
+            If 1, saves the plots as JPG files. Default is 0
+        save_path : str, optional
+            Path where plots will be saved, \data\processed\plots by default
+
+    Returns:
+        None
     """
+
+    if not isinstance(spectra, list) or not all(isinstance(spectrum, dict) for spectrum in spectra):
+        raise TypeError("Spectra must be a list of dictionaries")
+
+    if num_spectra is None:
+        num_spectra = len(spectra)
+    num_spectra = min(num_spectra, len(spectra))
+
+    if save:
+        os.makedirs(save_path, exist_ok=True)
+
+    for i, spectrum in enumerate(spectra[:num_spectra]):
+        mz_values = spectrum['m/z array']
+        intensity_values = spectrum['intensity array']
+        title = spectrum["params"].get("spectrum_id", f"Spectrum {i+1}")
+
+        if not mz_values or not intensity_values:
+            print(f"Spectrum {i+1} has no data to plot")
+            continue
+
+        plt.figure(figsize=(10, 5))
+        plt.bar(mz_values, intensity_values, width=0.5, color='red', label=title)
+        plt.xlabel("m/z")
+        plt.ylabel("Intensity")
+        plt.title(f"Mass Spectrum - {title}")
+
+
+        if save:
+            filename = os.path.join(save_path, f"{title}.jpg")
+            plt.savefig(filename, dpi=300)
+            print(f"Plot saved as: {filename}")
+            plt.close()
+
+        else:
+            plt.show()
 
     return
