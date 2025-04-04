@@ -35,7 +35,7 @@ def plot_spectrum(spectrum: dict, title: str = None):
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = r"\plots"):
+def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = r"/plots"):
     """
     Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
 
