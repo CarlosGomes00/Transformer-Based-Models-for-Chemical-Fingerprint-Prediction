@@ -10,9 +10,9 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"
     Parameters:
         spectrum : dict
             A dictionary containing spectrum data (m/z and intensity arrays)
-        save : bool
+        save : bool, optional
             If True, saves the plot.
-        save_path : str
+        save_path : str, optional
             Path where to save the plot.
 
     Return:
@@ -34,14 +34,14 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"
 
     if save:
         if save_path is None:
-            save_path = f"spectrum_{spectrum_id}"
+            save_path = f"{spectrum_id}"
         elif os.path.isdir(save_path):
-            save_path = os.path.join(save_path, f"spectrum_{spectrum_id}.png")
+            save_path = os.path.join(save_path, f"{spectrum_id}")
         else:
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         plt.savefig(save_path)
-        print(f"Plot saved: {save_path}")
+        print(f"Plot saved as: {save_path}")
         plt.close()
 
     else:
@@ -50,7 +50,7 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_path: str = r"/plots"):
+def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = r"/plots"):
     """
     Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
 
@@ -59,8 +59,8 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
             A list of dictionaries containing spectrum data (m/z and intensity arrays)
         num_spectra : int, optional
             The number of spectra to plot, all by default
-        save : int, optional
-            If 1, saves the plots as JPG files. Default is 0
+        save : bool, optional
+            If True, saves the plot.
         save_path : str, optional
             Path where plots will be saved, plots by default
 
