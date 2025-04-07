@@ -3,6 +3,7 @@ from pyteomics import mgf
 
 
 def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
+
     """
     Reads the headers of the spectra in an .mgf file
     The main purpose of this function is to see if the iteration over the spectra is taking place properly
@@ -62,7 +63,7 @@ def mgf_read_all(mgf_data: str, num_spectra: int = 1):
 
 
 
-def mgf_get_spectra(mgf_data: str, num_spectra: int = None) -> dict:
+def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = None):
 
     """
     Read all the information about the spectra in a .mgf file and return it as a dictionary
@@ -73,6 +74,8 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None) -> dict:
             Path to the dataset to be used
         num_spectra : int
             Number of spectra info to be read. All by default
+        spectrum_id : str, optional
+            Specific spectrum ID to fetch. Overrides num_spectra if provided.
 
     Returns:
         Dictionary of each spectrum
@@ -82,6 +85,13 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None) -> dict:
 
     if len(spectra) == 0:
         print("Error reading .MGF file")
+        return None
+
+    if spectrum_id:
+        for spec in spectra:
+            if spec["params"].get("spectrum_id") == spectrum_id:
+                return spec
+        print(f"Spectrum ID '{spectrum_id}' not found.")
         return None
 
     if num_spectra is None:
