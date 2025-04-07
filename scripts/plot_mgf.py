@@ -2,15 +2,18 @@ import matplotlib.pyplot as plt
 import os
 
 
-def plot_spectrum(spectrum: dict, title: str = None):
+def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"):
     """
     Plots a spectrum based on the information in the .mgf file
+    You need to call the function "mgf_get_spectra" in the target spectrum
 
     Parameters:
         spectrum : dict
             A dictionary containing spectrum data (m/z and intensity arrays)
-        title : str
-            Title of the plot
+        save : bool
+            If True, saves the plot.
+        save_path : str
+            Path where to save the plot.
 
     Return:
         MS/MS spectra
@@ -21,16 +24,28 @@ def plot_spectrum(spectrum: dict, title: str = None):
 
     mz_values = spectrum['m/z array']
     intensity_values = spectrum['intensity array']
-
-    if title is None:
-        title = spectrum["params"].get("spectrum_id")
+    spectrum_id = spectrum['params'].get("spectrum_id", "Unknown_ID")
 
     plt.figure(figsize=(10, 5))
     plt.bar(mz_values, intensity_values, width=0.5, color='red')
     plt.xlabel("m/z")
     plt.ylabel("Intensity")
-    plt.title(f"Mass Spectrum - {title}")
-    plt.show()
+    plt.title(f"Mass Spectrum - {spectrum_id}")
+
+    if save:
+        if save_path is None:
+            save_path = f"spectrum_{spectrum_id}"
+        elif os.path.isdir(save_path):
+            save_path = os.path.join(save_path, f"spectrum_{spectrum_id}.png")
+        else:
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        plt.savefig(save_path)
+        print(f"Plot saved: {save_path}")
+        plt.close()
+
+    else:
+        plt.show()
 
     return
 
@@ -89,4 +104,4 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: int = 0, save_pat
 
     return
 
-# TODO Fix plot_spectra path saver parameter / verify title parameter
+
