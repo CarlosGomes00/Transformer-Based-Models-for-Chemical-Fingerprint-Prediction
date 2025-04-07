@@ -53,6 +53,8 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"
 def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = r"/plots"):
     """
     Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
+    You need to call the function "mgf_get_spectra"
+
 
     Parameters:
         spectra : list of dict

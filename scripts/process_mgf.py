@@ -19,7 +19,7 @@ def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
     """
 
     try:
-        spectra = mgf.read(mgf_data, index_by_scans=True)
+        spectra = list(mgf.read(mgf_data, index_by_scans=True))
 
         for i, spectrum in enumerate(spectra):
             if i >= num_spectra:
