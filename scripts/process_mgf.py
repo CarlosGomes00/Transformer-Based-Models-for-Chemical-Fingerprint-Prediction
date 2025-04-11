@@ -74,7 +74,7 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
             Path to the dataset to be used
         num_spectra : int
             Number of spectra info to be read. All by default
-        spectrum_id : str, optional
+        spectrum_id : str
             Specific spectrum ID to fetch. Overrides num_spectra if provided.
 
     Returns:
@@ -98,3 +98,44 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
         return spectra
 
     return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
+
+
+def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = None) -> list:
+
+    """
+    Extracts SMILES from the spectra in a .mgf file
+
+    Parameters:
+        mgf_data : str
+            Path to the dataset to be used
+        num_spectra : int
+            Number of spectra info to be read. All by default
+        spectrum_id : str
+            Specific spectrum ID to fetch. Overrides num_spectra if provided
+
+    Returns:
+        list
+            List of SMILES strings
+    """
+
+    spectra = list(mgf.read(mgf_data, index_by_scans=True))
+    smiles_list = []
+
+    if spectrum_id:
+        for spec in spectra:
+            if spec["params"].get("spectrum_id") == spectrum_id:
+                smiles = spec["params"].get("smiles")
+                return [smiles] if smiles else []
+        return []
+
+    for i, spec in enumerate(spectra):
+        if num_spectra is not None and i >= num_spectra:
+            break
+        smiles = spec["params"].get("smiles")
+        if smiles:
+            smiles_list.append(smiles)
+
+    return smiles_list
+
+
+
