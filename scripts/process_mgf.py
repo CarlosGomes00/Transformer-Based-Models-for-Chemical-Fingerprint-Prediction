@@ -62,7 +62,6 @@ def mgf_read_all(mgf_data: str, num_spectra: int = 1):
         print(f"Error reading .MGF file: {e}")
 
 
-
 def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = None):
 
     """
@@ -138,4 +137,3 @@ def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = No
             data.append({"spectrum_id": spec_id, "smiles": smiles})
 
     return pd.DataFrame(data)
-

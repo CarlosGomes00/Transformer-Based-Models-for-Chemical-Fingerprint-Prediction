@@ -105,5 +105,3 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
             plt.show()
 
     return
-
-

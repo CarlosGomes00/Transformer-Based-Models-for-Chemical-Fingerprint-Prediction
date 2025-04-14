@@ -1,20 +1,15 @@
 import numpy as np
 import pandas as pd
 import rdkit.Chem.rdMolDescriptors
-from rdkit import Chem
-from rdkit.Chem import Draw
-from rdkit.Chem.Draw import IPythonConsole
-from rdkit.Chem import Descriptors
-from rdkit.Chem import AllChem, PandasTools, MACCSkeys, AtomPairs, rdFingerprintGenerator
+from rdkit.Chem import PandasTools
 from rdkit import DataStructs
-from rdkit.Chem.rdmolops import PatternFingerprint
-from rdkit.Avalon import pyAvalonTools
-from rdkit.Chem.AtomPairs.Pairs import GetAtomPairFingerprintAsBitVect
+
 import warnings
 warnings.filterwarnings('ignore')
 
 
-def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False, save_path: str = None) -> pd.DataFrame:
+def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
+                          save_path: str = "fingerprints.csv") -> pd.DataFrame:
 
     """
     Converts SMILES strings into Morgan (ECFP-like) fingerprints using RDKit
@@ -26,6 +21,10 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
             Radius for the Morgan fingerprint, 1 by default
         nbits : int
             Number of bits in the fingerprint, 2048 by default
+        save : bool
+            Whether to save the DataFrame with fingerprints to a CSV, False by default
+        save_path : str
+            Path where to save the DataFrame
 
     Returns:
         pd.DataFrame
@@ -58,4 +57,3 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
         print(f"Fingerprints saved in {save_path}")
 
     return fingerprints_df
-
