@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048) -> pd.DataFrame:
+def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False, save_path: str = None) -> pd.DataFrame:
 
     """
     Converts SMILES strings into Morgan (ECFP-like) fingerprints using RDKit
@@ -52,6 +52,10 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
         df_mf.append(arr)
 
     fingerprints_df = pd.concat([smiles, pd.DataFrame(df_mf)], axis=1)
+
+    if save:
+        fingerprints_df.to_csv(save_path, index=False)
+        print(f"Fingerprints saved in {save_path}")
 
     return fingerprints_df
 
