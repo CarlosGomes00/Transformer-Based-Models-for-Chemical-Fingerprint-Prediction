@@ -33,11 +33,18 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
 
     """
 
-    PandasTools.AddMoleculeColumnToFrame(smiles, 'smiles', 'molecule')
+    if "smiles" not in smiles.columns:
+        raise KeyError("The 'smiles' column was not found in DataFrame")
+    if radius < 0:
+        raise ValueError("Radius must be greater than or equal to 0")
+    if nbits <= 0:
+        raise ValueError("nBits must be greater than 0")
+
+    PandasTools.AddMoleculeColumnToFrame(smiles, "smiles", "molecule")
 
     df_mf = []
 
-    for mol in smiles['molecule']:
+    for mol in smiles["molecule"]:
         mf_bitvector = rdkit.Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(mol, radius=radius, nBits=nbits)
         arr = np.zeros((nbits,), dtype=np.int8)
 
@@ -47,3 +54,4 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
     fingerprints_df = pd.concat([smiles, pd.DataFrame(df_mf)], axis=1)
 
     return fingerprints_df
+
