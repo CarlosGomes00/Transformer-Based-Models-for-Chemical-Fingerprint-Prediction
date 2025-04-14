@@ -1,5 +1,5 @@
 from pyteomics import mgf
-
+import pandas as pd
 
 
 def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
@@ -100,7 +100,7 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
     return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
 
 
-def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = None) -> list:
+def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = None) -> pd.DataFrame:
 
     """
     Extracts SMILES from the spectra in a .mgf file
@@ -114,28 +114,28 @@ def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = No
             Specific spectrum ID to fetch. Overrides num_spectra if provided
 
     Returns:
-        list
-            List of SMILES strings
+        data
+            Pandas Dataframe with the SMILES
     """
 
     spectra = list(mgf.read(mgf_data, index_by_scans=True))
-    smiles_list = []
+    data = []
 
     if spectrum_id:
         for spec in spectra:
             if spec["params"].get("spectrum_id") == spectrum_id:
                 smiles = spec["params"].get("smiles")
-                return [smiles] if smiles else []
-        return []
+                data.append({"spectrum_id": spectrum_id, "smiles": smiles})
+                break
+        return pd.DataFrame(data)
 
     for i, spec in enumerate(spectra):
         if num_spectra is not None and i >= num_spectra:
             break
         smiles = spec["params"].get("smiles")
+        spec_id = spec["params"].get("spectrum_id")
         if smiles:
-            smiles_list.append(smiles)
+            data.append({"spectrum_id": spec_id, "smiles": smiles})
 
-    return smiles_list
-
-
+    return pd.DataFrame(data)
 
