@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import os
+from tqdm import tqdm
 
 
-def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"):
+def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = "plots"):
     """
     Plots a spectrum based on the information in the .mgf file
     You need to call the function "mgf_get_spectra" in the target spectrum
@@ -50,7 +51,7 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = r"/plots"
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = r"/plots"):
+def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = "plots"):
     """
     Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
     You need to call the function "mgf_get_spectra"
@@ -80,7 +81,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
     if save:
         os.makedirs(save_path, exist_ok=True)
 
-    for i, spectrum in enumerate(spectra[:num_spectra]):
+    for i, spectrum in enumerate(tqdm(spectra[:num_spectra], desc="Plotting Spectra", unit="spectrum")):
         mz_values = spectrum['m/z array']
         intensity_values = spectrum['intensity array']
         title = spectrum["params"].get("spectrum_id", f"Spectrum {i+1}")

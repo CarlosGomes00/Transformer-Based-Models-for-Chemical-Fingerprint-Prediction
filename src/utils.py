@@ -4,21 +4,26 @@ import os
 from pyteomics import mgf
 
 
-def path_check(mgf_data: str):
+def path_check(mgf_data: str) -> bool:
     """
     Checks if the path to the dataset has been found
 
     Parameters:
         mgf_data : str
             Path to the dataset to be used
+
+    Returns:
+        bool
+            True if file is found, False otherwise
     """
 
     if not os.path.exists(mgf_data):
         print(f"Error: File could not be found {os.path.abspath(mgf_data)}")
+        return False
     else:
         print("File found!")
+        True
 
-    return
 
 
 def check_spectrum_ids(mgf_data: str):
