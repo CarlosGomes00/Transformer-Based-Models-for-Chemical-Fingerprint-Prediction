@@ -57,9 +57,9 @@ conda env list
 ```
 
 With the features provided in this repository, you can:
-- Reading and parsing **.mgf** files
+- Reading and parsing *.mgf* files
 - Visualisation of individual and multiple spectra
-- SMILES extraction from **.mgf** files
+- SMILES extraction from *.mgf* files
 - Generation of Morgan Fingerprints
 
 To understand how, you can check out the mini tutorials that are available on the notebooks
