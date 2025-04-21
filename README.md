@@ -25,7 +25,7 @@ The structure of the repository has been organized in a modular way to make it e
 To ensure that all the project's dependencies are installed correctly, we recommend using a Conda environment. 
 You can easily create the environment with the project's dependencies from the env.yaml file included in this repository.
 
-Steps to set up the environment:
+## Steps to set up the environment:
 
 1. Make sure you have Conda installed. If you don't have Conda installed, download and install Miniconda or Anaconda.
 
