@@ -22,8 +22,6 @@ def path_check(mgf_data: str) -> bool:
         return False
     else:
         print("File found!")
-        True
-
 
 
 def check_spectrum_ids(mgf_data: str):
@@ -42,3 +40,41 @@ def check_spectrum_ids(mgf_data: str):
 
     else:
         print("All spectra have valid IDs")
+
+
+def check_mgf_data(mgf_data: str):
+
+    spectra = list(mgf.read(mgf_data, index_by_scans=True))
+
+    n_compounds = len(spectra)
+
+    unique = set()
+    unknown_compounds = 0
+    pos_ion_mode = 0
+    neg_ion_mode = 0
+    unknown_ion_mode = 0
+
+    for spectrum in spectra:
+        params = spectrum['params']
+        compound_name = params.get('COMPOUND_NAME', None)
+        if compound_name and compound_name.strip():
+            unique.add(compound_name)
+        else:
+            unknown_compounds += 1
+
+        ion_mode = params.get('IONMODE', None)
+        if ion_mode == 'positive':
+            pos_ion_mode += 1
+        elif ion_mode == 'negative':
+            neg_ion_mode += 1
+        else:
+            unknown_ion_mode += 1
+
+    unique = len(unique)
+
+    return {'Total compounds': n_compounds,
+            'Unique compounds': unique,
+            'Unknown compounds': unknown_compounds,
+            'Positive ionization mode': pos_ion_mode,
+            'Negative ionization mode': neg_ion_mode,
+            'Unknown ionization mode': unknown_ion_mode}
