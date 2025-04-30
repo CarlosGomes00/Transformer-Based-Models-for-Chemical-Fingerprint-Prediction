@@ -56,13 +56,13 @@ def check_mgf_data(mgf_data: str):
 
     for spectrum in spectra:
         params = spectrum['params']
-        compound_name = params.get('COMPOUND_NAME', None)
+        compound_name = params.get('compound_name', None)
         if compound_name and compound_name.strip():
             unique.add(compound_name)
         else:
             unknown_compounds += 1
 
-        ion_mode = params.get('IONMODE', None)
+        ion_mode = params.get('ionmode', None)
         if ion_mode == 'positive':
             pos_ion_mode += 1
         elif ion_mode == 'negative':
@@ -78,3 +78,5 @@ def check_mgf_data(mgf_data: str):
             'Positive ionization mode': pos_ion_mode,
             'Negative ionization mode': neg_ion_mode,
             'Unknown ionization mode': unknown_ion_mode}
+
+# TODO FAZER DOCUMENTAÇÃO

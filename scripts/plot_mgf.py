@@ -106,3 +106,35 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
             plt.show()
 
     return
+
+
+def plot_spectra_distribution(spectra: list, n_compounds: int = 20):
+
+    compound_frequency = {}
+
+    for spectrum in spectra:
+        params = spectrum["params"]
+        compound = params.get("compound_name", None)
+
+        if compound:
+            if compound in compound_frequency:
+                compound_frequency[compound] += 1
+            else:
+                compound_frequency[compound] = 1
+
+    sorted_compounds = sorted(compound_frequency.items(), key=lambda x: x[1], reverse=True)
+
+    compounds, frequencies = zip(*sorted_compounds)
+
+    short_names = [name[:20] + '...' if len(name) > 20 else name for name in compounds[:n_compounds]]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(short_names, frequencies[:n_compounds])
+    plt.xticks(rotation=90)
+    plt.xlabel("Compound")
+    plt.ylabel("Frequency")
+    plt.title("Distribution of compounds")
+    plt.tight_layout()
+    plt.show()
+
+#TODO Fazer documentação
