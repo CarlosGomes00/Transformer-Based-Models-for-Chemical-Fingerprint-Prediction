@@ -108,7 +108,20 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
     return
 
 
-def plot_spectra_distribution(spectra: list, n_compounds: int = 20):
+def plot_spectra_distribution(spectra: list, n_compounds: int = 20, top_percent: float = None):
+
+    """
+    Plot the distribution of spectra by compound
+
+    Parameters:
+        spectra : list of dict
+            A list of dictionaries containing spectrum data (m/z and intensity arrays)
+        n_compounds : int, optional
+            Number of compounds to represent, the 20 most frequent by default
+        top_percent : float, optional
+            If defined, filters compounds to include only those contributing up to this percentage
+            of total spectra
+    """
 
     compound_frequency = {}
 
@@ -122,19 +135,32 @@ def plot_spectra_distribution(spectra: list, n_compounds: int = 20):
             else:
                 compound_frequency[compound] = 1
 
-    sorted_compounds = sorted(compound_frequency.items(), key=lambda x: x[1], reverse=True)
+    if top_percent is None and n_compounds is not None:
+        sorted_compounds = sorted(compound_frequency.items(), key=lambda x: x[1], reverse=True)[:n_compounds]
+    else:
+        sorted_compounds = sorted(compound_frequency.items(), key=lambda x: x[1], reverse=True)
+
+    if top_percent is not None:
+        assert 0 < top_percent <= 99
+        total = sum(freq for _, freq in sorted_compounds)
+        cumulative = 0
+        filtered = []
+        for compound, freq in sorted_compounds:
+            cumulative += freq
+            filtered.append((compound, freq))
+            if (cumulative / total) * 100 >= top_percent:
+                break
+        sorted_compounds = filtered
 
     compounds, frequencies = zip(*sorted_compounds)
 
-    short_names = [name[:20] + '...' if len(name) > 20 else name for name in compounds[:n_compounds]]
+    short_names = [name[:20] + '...' if len(name) > 20 else name for name in compounds]
 
     plt.figure(figsize=(10, 6))
-    plt.bar(short_names, frequencies[:n_compounds])
+    plt.bar(short_names, frequencies)
     plt.xticks(rotation=90)
     plt.xlabel("Compound")
     plt.ylabel("Frequency")
     plt.title("Distribution of compounds")
     plt.tight_layout()
     plt.show()
-
-#TODO Fazer documentação
