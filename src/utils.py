@@ -1,6 +1,7 @@
 # Generic functions that can be reused
 
 import os
+import numpy as np
 from pyteomics import mgf
 
 
@@ -96,3 +97,47 @@ def check_mgf_data(mgf_data: str):
             'Positive ionization mode': pos_ion_mode,
             'Negative ionization mode': neg_ion_mode,
             'Unknown ionization mode': unknown_ion_mode}
+
+
+def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
+
+    """
+    Analyze m/z values and peak counts from spectra
+
+    Parameters:
+            spectra : list of dict
+                A list of dictionaries containing the spectra
+            max_peak_threshold : int, optional
+                Maximum number of peaks allowed in a spectrum to be considered valid
+
+    Returns:
+        dict with:
+            - m/z range (min, max)
+            - peak count statistics (min, max, mean, median)
+    """
+
+    mz_values = []
+    n_peaks = []
+
+    for spectrum in spectra:
+        mz_array = spectrum.get("m/z array", [])
+        if len(mz_array) == 0:
+            continue
+
+        if len(mz_array) > max_peak_threshold:
+            continue
+
+        mz_values.extend(mz_array)
+        n_peaks.append(len(mz_array))
+
+    stats = {
+        'm/z range': (float(np.min(mz_values)), float(np.max(mz_values))),
+        'peak count stats': {
+            'min': int(np.min(n_peaks)),
+            'max': int(np.max(n_peaks)),
+            'mean': float(np.mean(n_peaks)),
+            'median': float(np.median(n_peaks))
+        }
+    }
+
+    return stats
