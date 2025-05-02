@@ -44,6 +44,24 @@ def check_spectrum_ids(mgf_data: str):
 
 def check_mgf_data(mgf_data: str):
 
+    """
+    Analyzes an .MGF file and summarizes key statistics
+
+    Parameters:
+        mgf_data : str
+            Path to the dataset to be used
+
+    Returns:
+        dict
+            A dictionary containing:
+                - 'Total compounds': Total number of spectra in the file
+                - 'Unique compounds': Number of unique compound names identified
+                - 'Unknown compounds': Number of spectra missing a compound name
+                - 'Positive ionization mode': Number of spectra in positive ion mode
+                - 'Negative ionization mode': Number of spectra in negative ion mode
+                - 'Unknown ionization mode': Number of spectra where ion mode is unspecified or unrecognized
+    """
+
     spectra = list(mgf.read(mgf_data, index_by_scans=True))
 
     n_compounds = len(spectra)
@@ -78,5 +96,3 @@ def check_mgf_data(mgf_data: str):
             'Positive ionization mode': pos_ion_mode,
             'Negative ionization mode': neg_ion_mode,
             'Unknown ionization mode': unknown_ion_mode}
-
-# TODO FAZER DOCUMENTAÇÃO
