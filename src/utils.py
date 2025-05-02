@@ -109,9 +109,10 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
                 Maximum number of peaks allowed in a spectrum to be considered valid
 
     Returns:
-        dict with:
-            - m/z range (min, max)
-            - peak count statistics (min, max, mean, median)
+            dict
+                A dictionary containing:
+                    m/z range (min, max)
+                    peak count statistics (min, max, mean, median)
     """
 
     mz_values = []
