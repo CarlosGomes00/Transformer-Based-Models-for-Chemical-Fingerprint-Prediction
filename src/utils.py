@@ -43,14 +43,14 @@ def check_spectrum_ids(mgf_data: str):
         print("All spectra have valid IDs")
 
 
-def check_mgf_data(mgf_data: str):
+def check_mgf_data(spectra: list):
 
     """
     Analyzes an .MGF file and summarizes key statistics
 
     Parameters:
-        mgf_data : str
-            Path to the dataset to be used
+        spectra : list of dicts
+            A list of dictionaries containing the spectra
 
     Returns:
         dict
@@ -62,8 +62,6 @@ def check_mgf_data(mgf_data: str):
                 - 'Negative ionization mode': Number of spectra in negative ion mode
                 - 'Unknown ionization mode': Number of spectra where ion mode is unspecified or unrecognized
     """
-
-    spectra = list(mgf.read(mgf_data, index_by_scans=True))
 
     n_compounds = len(spectra)
 
