@@ -171,17 +171,26 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
 
 
 def mgf_spectrum_deconvoluter(
-        i: int,
-        spectrum: dict,
+        spectrum_obj: Tuple[int, dict],
         min_num_peaks: int,
         max_num_peaks: int,
         noise_rmv_threshold: float,
         allowed_spectral_entropy: float,
         mass_error: float,
-        mz_vocab: list,
+        mz_vocabs: list,
         log: bool,
         **kwargs):
 
+    i, spectrum = spectrum_obj
+
     mz_array = spectrum.get('m/z array', [])
-    if len(mz_array) < min_num_peaks:
+    if len(mz_array) < min_num_peaks or len(mz_array) > max_num_peaks:
+        if log:
+            print(f'[{i}] Rejected spectrum: {len(mz_array)}')
+        return None
+
+    precursor_mz, in_range = check_mz_precursor(spectrum, mz_vocabs)
+    if not in_range:
+        if log:
+            print(f'[{i}] Rejected m/z precursor ({precursor_mz})')
         return None
