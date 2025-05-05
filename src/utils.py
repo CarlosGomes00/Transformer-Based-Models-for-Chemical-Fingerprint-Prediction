@@ -3,6 +3,7 @@
 import os
 import numpy as np
 from pyteomics import mgf
+from typing import Tuple
 
 
 def path_check(mgf_data: str) -> bool:
@@ -41,6 +42,33 @@ def check_spectrum_ids(mgf_data: str):
 
     else:
         print("All spectra have valid IDs")
+
+
+def check_mz_precursor(spectrum: dict, mz_vocabs: list[float] = [50, 2000]) -> Tuple[float | None, bool]:
+    """
+    Extracts and checks whether the PrecursorMZ of a spectrum is within the permitted range
+
+    Parameters:
+        spectrum : dict
+            Dictionary containing the spectrum data
+        mz_vocabs : list
+            Sorted list of accepted lower and upper m/z limits
+
+    Returns:
+        Tuple: precursor_mz value or None, Is precursor_mz between the given range?
+    """
+    precursor_mz = spectrum['params'].get('precursor_mz', None)
+    if isinstance(precursor_mz, (tuple, list)):
+        precursor_mz = precursor_mz[0]
+    if precursor_mz is None:
+        return None, False
+
+    try:
+        precursor_mz = float(precursor_mz)
+        in_range = mz_vocabs[0] <= precursor_mz <= mz_vocabs[-1]
+        return precursor_mz, in_range
+    except (ValueError, TypeError):
+        return None, False
 
 
 def check_mgf_data(spectra: list):
@@ -140,3 +168,20 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
     }
 
     return stats
+
+
+def mgf_spectrum_deconvoluter(
+        i: int,
+        spectrum: dict,
+        min_num_peaks: int,
+        max_num_peaks: int,
+        noise_rmv_threshold: float,
+        allowed_spectral_entropy: float,
+        mass_error: float,
+        mz_vocab: list,
+        log: bool,
+        **kwargs):
+
+    mz_array = spectrum.get('m/z array', [])
+    if len(mz_array) < min_num_peaks:
+        return None
