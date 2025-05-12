@@ -169,13 +169,42 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
 
     return stats
 
+def spectra_integrator(
+        mz_array: np.ndarray,
+        int_array: np.ndarray,
+        mass_error: float) -> Tuple[np.ndarray, np.ndarray]:
+
+    order = np.argsort(int_array, kind='mergesort')[::-1]
+
+    mz_result = np.zeros_like(mz_array)
+    int_result = np.zeros_like(int_array)
+
+    count = 0
+
+    for idx in order:
+        if mz_array[idx] != 0:
+            close = np.where(np.abs(mz_array - mz_array[idx]) <= mass_error)[0]
+
+            summed_intensity = np.sum(int_array[close])
+            weighted_mz = np.sum(mz_array[close] * int_array[close]) / summed_intensity
+
+            mz_result[count] = weighted_mz
+            int_result[count] = summed_intensity
+
+            mz_array[close] = 0
+            int_array[close] = 0
+
+            count += 1
+
+    return mz_result[:count], int_result[:count]
+
+
 
 def mgf_spectrum_deconvoluter(
         spectrum_obj: Tuple[int, dict],
         min_num_peaks: int,
         max_num_peaks: int,
         noise_rmv_threshold: float,
-        allowed_spectral_entropy: float,
         mass_error: float,
         mz_vocabs: list,
         log: bool,
@@ -184,13 +213,71 @@ def mgf_spectrum_deconvoluter(
     i, spectrum = spectrum_obj
 
     mz_array = spectrum.get('m/z array', [])
-    if len(mz_array) < min_num_peaks or len(mz_array) > max_num_peaks:
+    spectrum_id = spectrum.get('spectrum_id', [])
+    n_peaks = len(mz_array)
+
+    # Verifica se o numero de picos é maior que o min e menor que o max
+    if n_peaks < min_num_peaks or n_peaks > max_num_peaks:
         if log:
-            print(f'[{i}] Rejected spectrum: {len(mz_array)}')
+            print(f'[{i}] Rejected spectrum: {n_peaks}')
         return None
 
+    # Verifica se o precursor está dentro do valor fornecido
     precursor_mz, in_range = check_mz_precursor(spectrum, mz_vocabs)
     if not in_range:
         if log:
             print(f'[{i}] Rejected m/z precursor ({precursor_mz})')
         return None
+
+    # Extração do valor massa carga e intensidades
+    mz_array = np.array(spectrum['m/z array'], dtype=float)
+    int_array = np.array(spectrum['intensity array'], dtype=float)
+
+    # Remove picos abaixo do limiar de ruído
+    threshold = noise_rmv_threshold * np.max(int_array)
+    keep = int_array >= threshold
+    mz_array = mz_array[keep]
+    int_array = int_array[keep]
+
+    if n_peaks < min_num_peaks:
+        if log:
+            print(f'[{i}] Rejected after noise filtering: {len(mz_array)} peaks left')
+        return None
+
+    int_array = int_array / np.max(int_array)
+    mz_array, int_array = spectra_integrator(mz_array, int_array, mass_error)
+
+    # Ordenar os picos por intensidade
+    order = np.argsort(int_array)[::-1]
+    if n_peaks > max_num_peaks:
+        order = order[:max_num_peaks]
+    mz_array = mz_array[order]
+    int_array = int_array[order]
+
+    # Filtra picos que estão dentro do intervalo definido por mz_vocabs
+    mz_min, mz_max = mz_vocabs[0], mz_vocabs[-1]
+    in_range = (mz_array >= mz_min) & (mz_array <= mz_max)
+    mz_array = mz_array[in_range]
+    int_array = int_array[in_range]
+    n_filtered_peaks = len(mz_array)
+
+    if n_filtered_peaks < min_num_peaks or n_filtered_peaks < 0.9*len(order):
+        if log:
+            print(f'[{i}] Rejected after mz range filtering: {n_filtered_peaks} peaks left')
+        return None
+
+    #tokenizar os valores de m/z
+    tokenized_mz = [np.argmin(np.abs(mz - mz_vocabs)) for mz in mz_array]
+    tokenized_precursor = [np.argmin(np.abs(precursor_mz - mz_vocabs))]
+
+    int_array = int_array / np.sum(int_array)
+
+    training_tuple = (
+        spectrum_id,
+        tokenized_mz,
+        tokenized_precursor,
+        int_array,
+        kwargs
+    )
+
+    return training_tuple
