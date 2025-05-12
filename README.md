@@ -62,4 +62,7 @@ With the features provided in this repository, you can:
 - SMILES extraction from *.mgf* files
 - Generation of Morgan Fingerprints
 
-To understand how, you can check out the mini tutorials that are available on the notebooks
+To understand how, you can check out the mini tutorials that are available on the notebooks.
+
+
+Much of the work that can be found in this repository has been adapted from IDSL_MINT (https://github.com/idslme/IDSL_MINT)
