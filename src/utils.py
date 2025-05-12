@@ -199,7 +199,6 @@ def spectra_integrator(
     return mz_result[:count], int_result[:count]
 
 
-
 def mgf_spectrum_deconvoluter(
         spectrum_obj: Tuple[int, dict],
         min_num_peaks: int,
@@ -213,7 +212,7 @@ def mgf_spectrum_deconvoluter(
     i, spectrum = spectrum_obj
 
     mz_array = spectrum.get('m/z array', [])
-    spectrum_id = spectrum.get('spectrum_id', [])
+    spectrum_id = spectrum.get('spectrum_id', f'spectrum_{i}')
     n_peaks = len(mz_array)
 
     # Verifica se o numero de picos é maior que o min e menor que o max
@@ -238,14 +237,27 @@ def mgf_spectrum_deconvoluter(
     keep = int_array >= threshold
     mz_array = mz_array[keep]
     int_array = int_array[keep]
+    n_peaks = len(mz_array)
 
     if n_peaks < min_num_peaks:
         if log:
-            print(f'[{i}] Rejected after noise filtering: {len(mz_array)} peaks left')
+            print(f'[{i}] Rejected after noise filtering: {n_peaks} peaks left')
         return None
 
-    int_array = int_array / np.max(int_array)
+    max_int = np.max(int_array)
+    if max_int == 0:
+        if log:
+            print(f'[{i}] Zero max intensity before integration')
+        return None
+    int_array = int_array / max_int
+
     mz_array, int_array = spectra_integrator(mz_array, int_array, mass_error)
+
+    n_peaks = len(mz_array)
+    if n_peaks < min_num_peaks:
+        if log:
+            print(f'[{i}] Rejected after integration: {n_peaks} peaks left')
+        return None
 
     # Ordenar os picos por intensidade
     order = np.argsort(int_array)[::-1]
@@ -261,23 +273,27 @@ def mgf_spectrum_deconvoluter(
     int_array = int_array[in_range]
     n_filtered_peaks = len(mz_array)
 
-    if n_filtered_peaks < min_num_peaks or n_filtered_peaks < 0.9*len(order):
+    if n_filtered_peaks < min_num_peaks or n_filtered_peaks < 0.9 * len(order):
         if log:
             print(f'[{i}] Rejected after mz range filtering: {n_filtered_peaks} peaks left')
         return None
 
-    #tokenizar os valores de m/z
+    # tokenizar os valores de m/z e do precursor
     tokenized_mz = [np.argmin(np.abs(mz - mz_vocabs)) for mz in mz_array]
-    tokenized_precursor = [np.argmin(np.abs(precursor_mz - mz_vocabs))]
+    tokenized_precursor = np.argmin(np.abs(precursor_mz - mz_vocabs))
 
-    int_array = int_array / np.sum(int_array)
+    int_sum = np.sum(int_array)
+    if int_sum == 0:
+        if log:
+            print(f'[{i}] Zero intensities detected')
+        return None
+    int_array = int_array / int_sum
 
     training_tuple = (
         spectrum_id,
         tokenized_mz,
         tokenized_precursor,
         int_array,
-        kwargs
     )
 
     return training_tuple
