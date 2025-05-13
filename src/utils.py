@@ -169,10 +169,29 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
 
     return stats
 
+
 def spectra_integrator(
         mz_array: np.ndarray,
         int_array: np.ndarray,
         mass_error: float) -> Tuple[np.ndarray, np.ndarray]:
+
+    """
+    Merge close m/z peaks within a given mass error tolerance
+
+    Parameters:
+        mz_array : np.ndarray
+            Array of m/z values
+        int_array : np.ndarray
+            Array of intensity values
+        mass_error : float
+            Maximum allowed m/z distance between peaks to be merged
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]
+            A tuple containing:
+                Array of merged m/z values
+                Array of corresponding summed intensities
+    """
 
     order = np.argsort(int_array, kind='mergesort')[::-1]
 
@@ -206,8 +225,39 @@ def mgf_spectrum_deconvoluter(
         noise_rmv_threshold: float,
         mass_error: float,
         mz_vocabs: list,
-        log: bool,
-        **kwargs):
+        log: bool):
+
+    """
+    Applies a series of preprocessing steps including noise removal, peak count validation, precursor m/z validation and
+    peak normalization
+
+    Parameters:
+        spectrum_obj : Tuple[int, dict]
+            Tuple containing the index and a dictionary representing a spectrum
+        min_num_peaks : int
+            Minimum number of peaks required to consider the spectrum valid
+        max_num_peaks : int
+            Maximum number of peaks allowed in the spectrum
+        noise_rmv_threshold : float
+            Proportional threshold (between 0 and 1) to remove noise. Peaks with
+            intensity below this fraction of the maximum intensity are discarded
+        mass_error : float
+            Tolerance for peak merging in m/z units during integration
+        mz_vocabs : list
+            List of reference m/z values used for tokenization
+        log : bool
+            If True, it prints any error messages that may be triggered when the function is used
+
+    Returns:
+        tuple or None
+            Returns a tuple containing:
+                Identifier of the spectrum
+                Tokenized m/z peak indices
+                Tokenized precursor m/z index
+                Normalized intensity values
+
+            If the spectrum fails any quality filter, returns None.
+    """
 
     i, spectrum = spectrum_obj
 
