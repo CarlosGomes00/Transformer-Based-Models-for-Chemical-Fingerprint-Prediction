@@ -37,7 +37,7 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
     if radius < 0:
         raise ValueError("Radius must be greater than or equal to 0")
     if nbits <= 0:
-        raise ValueError("nBits must be greater than 0
+        raise ValueError("nBits must be greater than 0")
 
     PandasTools.AddMoleculeColumnToFrame(smiles, "smiles", "molecule")
 
