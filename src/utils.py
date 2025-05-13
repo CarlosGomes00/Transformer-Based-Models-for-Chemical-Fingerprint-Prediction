@@ -212,7 +212,7 @@ def mgf_spectrum_deconvoluter(
     i, spectrum = spectrum_obj
 
     mz_array = spectrum.get('m/z array', [])
-    spectrum_id = spectrum.get('spectrum_id', f'spectrum_{i}')
+    spectrum_id = spectrum["params"].get("spectrum_id", f"Spectrum {i+1}")
     n_peaks = len(mz_array)
 
     # Verifica se o numero de picos é maior que o min e menor que o max
