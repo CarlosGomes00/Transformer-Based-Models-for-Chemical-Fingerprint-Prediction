@@ -19,7 +19,7 @@ def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
     """
 
     try:
-        spectra = list(mgf.read(mgf_data, index_by_scans=True))
+        spectra = list(mgf.read(mgf_data, use_index=False))
 
         for i, spectrum in enumerate(spectra):
             if i >= num_spectra:
@@ -48,7 +48,7 @@ def mgf_read_all(mgf_data: str, num_spectra: int = 1):
     """
 
     try:
-        spectra = mgf.read(mgf_data, index_by_scans=True)
+        spectra = mgf.read(mgf_data, use_index=False)
 
         for i, spectrum in enumerate(spectra):
             if i >= num_spectra:
@@ -80,7 +80,7 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
         Dictionary of each spectrum
     """
 
-    spectra = list(mgf.read(mgf_data, index_by_scans=True))
+    spectra = list(mgf.read(mgf_data, use_index=False))
 
     if len(spectra) == 0:
         print("Error reading .MGF file")
@@ -117,7 +117,7 @@ def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = No
             Pandas Dataframe with the SMILES
     """
 
-    spectra = list(mgf.read(mgf_data, index_by_scans=True))
+    spectra = list(mgf.read(mgf_data, use_index=False))
     data = []
 
     if spectrum_id:

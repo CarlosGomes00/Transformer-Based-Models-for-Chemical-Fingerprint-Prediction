@@ -4,6 +4,8 @@ import os
 import numpy as np
 from pyteomics import mgf
 from typing import Tuple
+import re
+from collections import Counter
 
 
 def path_check(mgf_data: str) -> bool:
@@ -27,7 +29,7 @@ def path_check(mgf_data: str) -> bool:
 
 
 def check_spectrum_ids(mgf_data: str):
-    spectra = mgf.read(mgf_data, index_by_scans=True)
+    spectra = mgf.read(mgf_data, use_index=False)
 
     missing_ids = []
 
@@ -347,3 +349,44 @@ def mgf_spectrum_deconvoluter(
     )
 
     return training_tuple
+
+
+def validate_mgf_structure(mgf_path):
+
+    with open(mgf_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+
+        scan_ids = []
+        spectrum_ids = []
+        spectrum_count = 0
+        current_block = []
+
+        for line in lines:
+            line = line.strip()
+
+            if line == "BEGIN IONS":
+                current_block = []
+            elif line == "END IONS":
+                spectrum_count += 1
+                block_text = "\n".join(current_block)
+
+                scan_match = re.search(r'SCANS=(.+)', block_text)
+                id_match = re.search(r'SPECTRUM_ID=(.+)', block_text)
+
+                scan_ids.append(scan_match.group(1).strip() if scan_match else "MISSING")
+                spectrum_ids.append(id_match.group(1).strip() if id_match else "MISSING")
+            else:
+                current_block.append(line)
+
+        scan_counter = Counter(scan_ids)
+        spectrum_id_counter = Counter(spectrum_ids)
+
+        duplicate_scans = [k for k, v in scan_counter.items() if v > 1 and k != "MISSING"]
+        duplicate_specids = [k for k, v in spectrum_id_counter.items() if v > 1 and k != "MISSING"]
+
+        print(f"\nTotal number of spectra found: {spectrum_count}")
+        print(f"Missing SCANS: {scan_ids.count('MISSING')}")
+        print(f"Missing SPECTRUM_ID: {spectrum_ids.count('MISSING')}")
+        print(f"Duplicate SCANS: {len(duplicate_scans)} -> {duplicate_scans[:5]}...")
+        print(f"Duplicate SPECTRUM_ID: {len(duplicate_specids)} -> {duplicate_specids[:5]}...")
+
