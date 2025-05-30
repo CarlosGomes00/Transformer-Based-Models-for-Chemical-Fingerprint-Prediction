@@ -1,5 +1,4 @@
 # Generic functions that can be reused
-
 import os
 import numpy as np
 from pyteomics import mgf
@@ -127,7 +126,7 @@ def check_mgf_data(spectra: list):
             'Unknown ionization mode': unknown_ion_mode}
 
 
-def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
+def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000, percentile: int = None):
 
     """
     Analyze m/z values and peak counts from spectra
@@ -165,7 +164,15 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000):
             'min': int(np.min(n_peaks)),
             'max': int(np.max(n_peaks)),
             'mean': float(np.mean(n_peaks)),
-            'median': float(np.median(n_peaks))
+            'median': float(np.median(n_peaks)),
+            'percentile': {
+                '25%': float(np.percentile(n_peaks, 25)),
+                '75%': float(np.percentile(n_peaks, 75)),
+                '90%': float(np.percentile(n_peaks, 90)),
+                '95%': float(np.percentile(n_peaks, 95)),
+                '99%': float(np.percentile(n_peaks, 99)),
+                f'{percentile}': float(np.percentile(n_peaks, percentile))
+            }
         }
     }
 
@@ -389,4 +396,3 @@ def validate_mgf_structure(mgf_path):
         print(f"Missing SPECTRUM_ID: {spectrum_ids.count('MISSING')}")
         print(f"Duplicate SCANS: {len(duplicate_scans)} -> {duplicate_scans[:5]}...")
         print(f"Duplicate SPECTRUM_ID: {len(duplicate_specids)} -> {duplicate_specids[:5]}...")
-
