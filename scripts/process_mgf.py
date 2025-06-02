@@ -99,41 +99,31 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
     return spectra[:num_spectra] if num_spectra > 1 else spectra[0]
 
 
-def mgf_get_smiles(mgf_data: str, num_spectra: int = None, spectrum_id: str = None) -> pd.DataFrame:
+def mgf_get_smiles(spectra: list[dict], as_dataframe: bool = False):
 
     """
-    Extracts SMILES from the spectra in a .mgf file
+    Extract spectrum IDs and SMILES from a list of spectra.
 
     Parameters:
-        mgf_data : str
-            Path to the dataset to be used
-        num_spectra : int
-            Number of spectra info to be read. All by default
-        spectrum_id : str
-            Specific spectrum ID to fetch. Overrides num_spectra if provided
+        spectra : list of dicts
+           Output of mgf_get_spectra
+        as_dataframe : bool
+           If True, returns a pandas DataFrame instead of a dict
 
     Returns:
-        data
-            Pandas Dataframe with the SMILES
+       dict or pd.DataFrame
+           Dictionary with 'id' and 'smiles' lists, or a DataFrame
     """
 
-    spectra = list(mgf.read(mgf_data, use_index=False))
-    data = []
-
-    if spectrum_id:
-        for spec in spectra:
-            if spec["params"].get("spectrum_id") == spectrum_id:
-                smiles = spec["params"].get("smiles")
-                data.append({"spectrum_id": spectrum_id, "smiles": smiles})
-                break
-        return pd.DataFrame(data)
-
-    for i, spec in enumerate(spectra):
-        if num_spectra is not None and i >= num_spectra:
-            break
-        smiles = spec["params"].get("smiles")
+    ids, smiles_list = [], []
+    for spec in spectra:
         spec_id = spec["params"].get("spectrum_id")
-        if smiles:
-            data.append({"spectrum_id": spec_id, "smiles": smiles})
+        smiles = spec["params"].get("smiles")
+        if spec_id and smiles:
+            ids.append(spec_id)
+            smiles_list.append(smiles)
 
-    return pd.DataFrame(data)
+    if as_dataframe:
+        return pd.DataFrame({'id': ids, 'smiles': smiles_list})
+    else:
+        return {'id': ids, 'smiles': smiles_list}
