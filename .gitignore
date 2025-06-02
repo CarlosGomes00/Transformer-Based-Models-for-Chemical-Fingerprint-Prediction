@@ -1,6 +1,7 @@
 # Data / Datasets
 data/
 .idea/
+dev_notes
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

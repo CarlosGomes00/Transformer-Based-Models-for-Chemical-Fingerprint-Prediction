@@ -13,11 +13,12 @@ The structure of the repository has been organized in a modular way to make it e
     ├── src/                        
     │   └── utils.py                      
     ├── results/                    
-    ├── scripts/                   
+    ├── scripts/
+    │   ├── ms_to_fingerprint.py                   
     │   ├── process_mgf.py
     │   ├── plot_mgf.py              
     │   └── get_fingerprints.py   
-    ├── env.yaml                
+    ├── requirements.yml                
     ├── README.md
     └── .gitignore
 ```
@@ -39,7 +40,7 @@ git clone https://github.com/CarlosGomes00/Transformer-Based-Models-for-Chemical
 command to create the Conda environment with the required dependencies:
 
 ```
-conda env create -f env.yaml
+conda env create -f requirements.yml 
 ```
 
 4. Activate the Conda environment: Once the environment is created, activate it with the following command:
