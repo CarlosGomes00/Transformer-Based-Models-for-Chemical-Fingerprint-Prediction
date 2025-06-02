@@ -7,11 +7,11 @@ from rdkit import DataStructs
 import warnings
 warnings.filterwarnings('ignore')
 
-
+# LEGACY: Função antiga baseada, irá ser substituída pela utilização do DeepMol
 def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
                           save_path: str = "fingerprints.csv") -> pd.DataFrame:
 
-    """
+    '''
     Converts SMILES strings into Morgan (ECFP-like) fingerprints using RDKit
 
     Parameters:
@@ -29,8 +29,8 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
     Returns:
         pd.DataFrame
             DataFrame with the original info + Morgan fingerprints bits
+    '''
 
-    """
 
     if "smiles" not in smiles.columns:
         raise KeyError("The 'smiles' column was not found in DataFrame")
@@ -57,3 +57,5 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
         print(f"Fingerprints saved in {save_path}")
 
     return fingerprints_df
+
+
