@@ -6,6 +6,7 @@ from rdkit import DataStructs
 from deepmol.datasets import SmilesDataset
 from deepmol.compound_featurization import MorganFingerprint
 
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -75,10 +76,16 @@ def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, retur
             Number of parallel processes to generate fingerprints
         return_df : bool
             If True, it also returns a DataFrame with the fingerprints
+
+    Returns:
+        dataset : SmilesDataset
+            A DeepMol dataset with the generated fingerprints
+        df : pd.Dataframe
+             DataFrame with spectrum_id and fingerprint bits if return_df is True
     """
 
     if isinstance(smiles_data, pd.DataFrame):
-        if "smiles".lower() not in smiles_data.columns or "spectrum_id" not in smiles_data.columns:
+        if "smiles" not in smiles_data.columns or "spectrum_id" not in smiles_data.columns:
             raise ValueError('DataFrame needs to have a smiles and spectrum_id column')
         smiles = smiles_data["smiles"].tolist()
         ids = smiles_data["spectrum_id"].tolist()
