@@ -3,12 +3,14 @@ import pandas as pd
 import rdkit.Chem.rdMolDescriptors
 from rdkit.Chem import PandasTools
 from rdkit import DataStructs
+from deepmol.datasets import SmilesDataset
+from deepmol.compound_featurization import MorganFingerprint
 
 import warnings
 warnings.filterwarnings('ignore')
 
 # LEGACY: Função antiga baseada, irá ser substituída pela utilização do DeepMol
-def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
+def smiles_to_fingerprint_(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
                           save_path: str = "fingerprints.csv") -> pd.DataFrame:
 
     '''
@@ -58,4 +60,45 @@ def smiles_to_fingerprint(smiles: pd.DataFrame, radius: int = 1, nbits: int = 20
 
     return fingerprints_df
 
+
+def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, return_df: bool = False):
+
+    """
+    Generates Morgan fingerprints from SMILES using DeepMol
+
+    Parameters:
+        smiles_data : pd.DataFrame, List
+            DataFrame with ‘smiles’ and ‘spectrum_id’ or list of SMILES
+        ids : list
+            List of matching IDs if ‘smiles_data’ is a list
+        n_jobs : int
+            Number of parallel processes to generate fingerprints
+        return_df : bool
+            If True, it also returns a DataFrame with the fingerprints
+    """
+
+    if isinstance(smiles_data, pd.DataFrame):
+        if "smiles".lower() not in smiles_data.columns or "spectrum_id" not in smiles_data.columns:
+            raise ValueError('DataFrame needs to have a smiles and spectrum_id column')
+        smiles = smiles_data["smiles"].tolist()
+        ids = smiles_data["spectrum_id"].tolist()
+
+    elif isinstance(smiles_data, list):
+        if ids is None:
+            raise ValueError("If you use a list of SMILES, provide a list with the corresponding IDs as well")
+        smiles = smiles_data
+
+    else:
+        raise TypeError("Provide a DataFrame or two lists, one with the SMILES and the other with their corresponding IDs")
+
+    dataset = SmilesDataset(smiles, ids=ids)
+
+    MorganFingerprint(n_jobs=n_jobs).featurize(dataset, inplace=True)
+
+    if return_df:
+        df = pd.DataFrame(dataset.X, dtype=int)
+        df.insert(0, "spectrum_id", ids)
+        return dataset, df
+
+    return dataset
 
