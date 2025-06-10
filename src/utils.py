@@ -1,19 +1,17 @@
 # Generic functions that can be reused
 import os
 import numpy as np
-from pyteomics import mgf
 from typing import Tuple
-import re
-from collections import Counter
+import matplotlib.pyplot as plt
 
 
 def path_check(mgf_data: str) -> bool:
     """
-    Checks if the path to the dataset has been found
+    Checks if the path to the datasets has been found
 
     Parameters:
         mgf_data : str
-            Path to the dataset to be used
+            Path to the datasets to be used
 
     Returns:
         bool
@@ -27,31 +25,13 @@ def path_check(mgf_data: str) -> bool:
         print("File found!")
 
 
-def check_spectrum_ids(mgf_data: str):
-    spectra = mgf.read(mgf_data, use_index=False)
-
-    missing_ids = []
-
-    for i, spectrum in enumerate(spectra):
-        spectrum_id = spectrum['params'].get('spectrum_id', None)
-
-        if not spectrum_id:
-            missing_ids.append(i + 1)
-
-    if missing_ids:
-        raise ValueError(f"Error: Missing spectrum IDs in the following spectra: {', '.join(map(str, missing_ids))}")
-
-    else:
-        print("All spectra have valid IDs")
-
-
 def check_mz_precursor(spectrum: dict, mz_vocabs: list[float] = [50, 2000]) -> Tuple[float | None, bool]:
     """
     Extracts and checks whether the PrecursorMZ of a spectrum is within the permitted range
 
     Parameters:
         spectrum : dict
-            Dictionary containing the spectrum data
+            Dictionary containing the spectrum datasets
         mz_vocabs : list
             Sorted list of accepted lower and upper m/z limits
 
@@ -70,113 +50,6 @@ def check_mz_precursor(spectrum: dict, mz_vocabs: list[float] = [50, 2000]) -> T
         return precursor_mz, in_range
     except (ValueError, TypeError):
         return None, False
-
-
-def check_mgf_data(spectra: list):
-
-    """
-    Analyzes an .MGF file and summarizes key statistics
-
-    Parameters:
-        spectra : list of dicts
-            A list of dictionaries containing the spectra
-
-    Returns:
-        dict
-            A dictionary containing:
-                - 'Total compounds': Total number of spectra in the file
-                - 'Unique compounds': Number of unique compound names identified
-                - 'Unknown compounds': Number of spectra missing a compound name
-                - 'Positive ionization mode': Number of spectra in positive ion mode
-                - 'Negative ionization mode': Number of spectra in negative ion mode
-                - 'Unknown ionization mode': Number of spectra where ion mode is unspecified or unrecognized
-    """
-
-    n_compounds = len(spectra)
-
-    unique = set()
-    unknown_compounds = 0
-    pos_ion_mode = 0
-    neg_ion_mode = 0
-    unknown_ion_mode = 0
-
-    for spectrum in spectra:
-        params = spectrum['params']
-        compound_name = params.get('compound_name', None)
-        if compound_name and compound_name.strip():
-            unique.add(compound_name)
-        else:
-            unknown_compounds += 1
-
-        ion_mode = params.get('ionmode', None)
-        if ion_mode == 'positive':
-            pos_ion_mode += 1
-        elif ion_mode == 'negative':
-            neg_ion_mode += 1
-        else:
-            unknown_ion_mode += 1
-
-    unique = len(unique)
-
-    return {'Total compounds': n_compounds,
-            'Unique compounds': unique,
-            'Unknown compounds': unknown_compounds,
-            'Positive ionization mode': pos_ion_mode,
-            'Negative ionization mode': neg_ion_mode,
-            'Unknown ionization mode': unknown_ion_mode}
-
-
-def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000, percentile: int = None):
-
-    """
-    Analyze m/z values and peak counts from spectra
-
-    Parameters:
-            spectra : list of dict
-                A list of dictionaries containing the spectra
-            max_peak_threshold : int, optional
-                Maximum number of peaks allowed in a spectrum to be considered valid
-
-    Returns:
-            dict
-                A dictionary containing:
-                    m/z range (min, max)
-                    peak count statistics (min, max, mean, median)
-    """
-
-    mz_values = []
-    n_peaks = []
-
-    for spectrum in spectra:
-        mz_array = spectrum.get("m/z array", [])
-        if len(mz_array) == 0:
-            continue
-
-        if len(mz_array) > max_peak_threshold:
-            continue
-
-        mz_values.extend(mz_array)
-        n_peaks.append(len(mz_array))
-
-    stats = {
-        'm/z range': (float(np.min(mz_values)), float(np.max(mz_values))),
-        'peak count stats': {
-            'min': int(np.min(n_peaks)),
-            'max': int(np.max(n_peaks)),
-            'mean': float(np.mean(n_peaks)),
-            'median': float(np.median(n_peaks)),
-            'percentile': {
-                '25%': float(np.percentile(n_peaks, 25)),
-                '75%': float(np.percentile(n_peaks, 75)),
-                '90%': float(np.percentile(n_peaks, 90)),
-                '95%': float(np.percentile(n_peaks, 95)),
-                '99%': float(np.percentile(n_peaks, 99)),
-                f'{percentile}': float(np.percentile(n_peaks, percentile))
-            }
-        }
-    }
-
-    return stats
 
 
 def spectra_integrator(
@@ -358,41 +231,61 @@ def mgf_spectrum_deconvoluter(
     return training_tuple
 
 
-def validate_mgf_structure(mgf_path):
+def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rmv_threshold, mass_error, log,
+                     plot=False):
 
-    with open(mgf_path, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
+    """
+    Iterates through a list of MGF spectra, applying filtering and preprocessing steps via `mgf_spectrum_deconvoluter`
 
-        scan_ids = []
-        spectrum_ids = []
-        spectrum_count = 0
-        current_block = []
+    Parameters:
+        mgf_data : list of dict
+            List of spectra, where each spectrum is represented as a dictionary
+        mz_vocabs : list
+            List of reference m/z values used for tokenization
+        min_num_peaks : int
+            Minimum number of peaks required to consider the spectrum valid
+        max_num_peaks : int
+            Maximum number of peaks allowed in the spectrum
+        noise_rmv_threshold : float
+            Proportional threshold to remove noise. Peaks below this fraction of
+            the maximum intensity are discarded
+        mass_error : float
+            Tolerance for peak merging in m/z units during integration
+        log : bool
+            If True, it prints any error messages that may be triggered when the function is used
+        plot : bool, optional
+            If True, plots the tokenized spectra that pass the filtering
 
-        for line in lines:
-            line = line.strip()
+    """
+    processed_spectra = []
 
-            if line == "BEGIN IONS":
-                current_block = []
-            elif line == "END IONS":
-                spectrum_count += 1
-                block_text = "\n".join(current_block)
+    for i, spectrum in enumerate(mgf_data):
+        result = mgf_spectrum_deconvoluter(
+            spectrum_obj=(i, spectrum),
+            min_num_peaks=min_num_peaks,
+            max_num_peaks=max_num_peaks,
+            noise_rmv_threshold=noise_rmv_threshold,
+            mass_error=mass_error,
+            mz_vocabs=mz_vocabs,
+            log=log,
+        )
 
-                scan_match = re.search(r'SCANS=(.+)', block_text)
-                id_match = re.search(r'SPECTRUM_ID=(.+)', block_text)
+        if result is not None:
+            processed_spectra.append(result)
 
-                scan_ids.append(scan_match.group(1).strip() if scan_match else "MISSING")
-                spectrum_ids.append(id_match.group(1).strip() if id_match else "MISSING")
-            else:
-                current_block.append(line)
+            if plot:
+                spectrum_id, tokenized_mz, tokenized_precursor, intensities = result
+                print(f"\nID: {spectrum_id}")
+                print(f"Tokenized m/z: {tokenized_mz}")
+                print(f"Tokenized precursor: {tokenized_precursor}")
+                print(f"Normalized intensities: {intensities}")
 
-        scan_counter = Counter(scan_ids)
-        spectrum_id_counter = Counter(spectrum_ids)
+                plt.figure(figsize=(10, 5))
+                plt.bar(tokenized_mz, intensities, width=5, color='royalblue')
+                plt.title(f"Mass Spectrum {spectrum_id}")
+                plt.xlabel("Tokenized m/z")
+                plt.ylabel("Normalized Intensity")
+                plt.tight_layout()
+                plt.show()
 
-        duplicate_scans = [k for k, v in scan_counter.items() if v > 1 and k != "MISSING"]
-        duplicate_specids = [k for k, v in spectrum_id_counter.items() if v > 1 and k != "MISSING"]
-
-        print(f"\nTotal number of spectra found: {spectrum_count}")
-        print(f"Missing SCANS: {scan_ids.count('MISSING')}")
-        print(f"Missing SPECTRUM_ID: {spectrum_ids.count('MISSING')}")
-        print(f"Duplicate SCANS: {len(duplicate_scans)} -> {duplicate_scans[:5]}...")
-        print(f"Duplicate SPECTRUM_ID: {len(duplicate_specids)} -> {duplicate_specids[:5]}...")
+    return processed_spectra

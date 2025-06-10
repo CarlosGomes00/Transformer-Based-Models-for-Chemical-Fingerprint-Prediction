@@ -3,14 +3,14 @@ import os
 from tqdm import tqdm
 
 
-def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = "plots"):
+def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = "outputs"):
     """
     Plots a spectrum based on the information in the .mgf file
     You need to call the function "mgf_get_spectra" in the target spectrum
 
     Parameters:
         spectrum : dict
-            A dictionary containing spectrum data (m/z and intensity arrays)
+            A dictionary containing spectrum datasets (m/z and intensity arrays)
         save : bool, optional
             If True, saves the plot.
         save_path : str, optional
@@ -51,7 +51,7 @@ def plot_spectrum(spectrum: dict, save: bool = False, save_path: str = "plots"):
     return
 
 
-def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = "plots"):
+def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, save_path: str = "outputs"):
     """
     Plots multiple spectra from a list of spectrum dictionaries and optionally saves them
     You need to call the function "mgf_get_spectra"
@@ -59,7 +59,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
 
     Parameters:
         spectra : list of dict
-            A list of dictionaries containing spectrum data (m/z and intensity arrays)
+            A list of dictionaries containing spectrum datasets (m/z and intensity arrays)
         num_spectra : int, optional
             The number of spectra to plot, all by default
         save : bool, optional
@@ -87,7 +87,7 @@ def plot_spectra(spectra: list, num_spectra: int = None, save: bool = False, sav
         title = spectrum["params"].get("spectrum_id", f"Spectrum {i+1}")
 
         if mz_values.size == 0 or intensity_values.size == 0:
-            print(f"Spectrum {i+1} has no data to plot")
+            print(f"Spectrum {i+1} has no datasets to plot")
             continue
 
         plt.figure(figsize=(10, 5))
@@ -115,7 +115,7 @@ def plot_spectra_distribution(spectra: list, n_compounds: int = 20, top_percent:
 
     Parameters:
         spectra : list of dict
-            A list of dictionaries containing spectrum data (m/z and intensity arrays)
+            A list of dictionaries containing spectrum datasets (m/z and intensity arrays)
         n_compounds : int, optional
             Number of compounds to represent, the 20 most frequent by default
         top_percent : float, optional

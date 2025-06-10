@@ -68,7 +68,7 @@ def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, retur
     Generates Morgan fingerprints from SMILES using DeepMol
 
     Parameters:
-        smiles_data : pd.DataFrame, List
+        smiles_data : pd.DataFrame, list
             DataFrame with ‘smiles’ and ‘spectrum_id’ or list of SMILES
         ids : list
             List of matching IDs if ‘smiles_data’ is a list
@@ -78,8 +78,8 @@ def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, retur
             If True, it also returns a DataFrame with the fingerprints
 
     Returns:
-        dataset : SmilesDataset
-            A DeepMol dataset with the generated fingerprints
+        datasets : SmilesDataset
+            A DeepMol datasets with the generated fingerprints
         df : pd.Dataframe
              DataFrame with spectrum_id and fingerprint bits if return_df is True
     """
