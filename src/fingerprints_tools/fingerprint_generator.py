@@ -10,7 +10,7 @@ from deepmol.compound_featurization import MorganFingerprint
 import warnings
 warnings.filterwarnings('ignore')
 
-# LEGACY: Função antiga baseada, irá ser substituída pela utilização do DeepMol
+# LEGACY: Função antiga, utilizar a função que usa o DeepMol (smiles_to_fingerprint)
 def smiles_to_fingerprint_(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
                           save_path: str = "fingerprints.csv") -> pd.DataFrame:
 

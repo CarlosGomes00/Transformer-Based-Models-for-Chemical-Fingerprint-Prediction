@@ -5,6 +5,19 @@ from collections import Counter
 
 
 def check_spectrum_ids(mgf_data: str):
+
+    """
+    Checks if all spectra in an MGF file contain a 'spectrum_id' field
+
+    Parameters:
+        mgf_data : str
+            Path to the MGF file to be checked
+
+    Raises:
+        ValueError
+            If one or more spectra are missing the 'spectrum_id' field
+    """
+
     spectra = mgf.read(mgf_data, use_index=False)
 
     missing_ids = []
@@ -130,6 +143,25 @@ def check_mgf_spectra(spectra: list, max_peak_threshold: int = 10000, percentile
 
 
 def validate_mgf_structure(mgf_path):
+
+    """
+    Validates the structure of an .mgf file by checking the presence and uniqueness of
+    SCANS and SPECTRUM_ID fields within spectra blocks
+
+    Parameters:
+        mgf_path : str
+            Path to the MGF file to be validated.
+
+    Returns:
+        None
+
+    Prints:
+        - Total number of spectra found
+        - Number of missing SCANS entries
+        - Number of missing SPECTRUM_ID entries
+        - Number and examples of duplicate SCANS
+        - Number and examples of duplicate SPECTRUM_IDs
+    """
 
     with open(mgf_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
