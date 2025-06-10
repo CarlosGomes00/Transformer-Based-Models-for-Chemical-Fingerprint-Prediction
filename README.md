@@ -5,26 +5,32 @@ This repository contains the code and work developed for my master's thesis in B
 ## Repository structure
 The structure of the repository has been organized in a modular way to make it easier to navigate and understand the code.
 
-```
-└── Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/               
+```    
+└── Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/
+    ├── env.yml
     ├── notebooks/
+    │   ├── outputs/
     │   ├── fingerprints_test.ipynb
-    │   └── mfg_test.py                        
-    ├── src/                        
-    │   └── utils.py                      
-    ├── results/                    
+    │   └── mgf_test.ipynb
     ├── scripts/
-    │   ├── ms_to_fingerprint.py                   
-    │   ├── process_mgf.py
-    │   ├── plot_mgf.py              
-    │   └── get_fingerprints.py   
-    ├── requirements.yml                
-    ├── README.md
-    └── .gitignore
+    │   └── __init__.py
+    └── src/
+        ├── fingerprint_tools/
+        │   ├── __init__.py
+        │   └── fingerprint_generator.py
+        ├── mgf_tools/
+        │   ├── __init__.py
+        │   ├── mgf_checks.py
+        │   ├── mgf_get.py
+        │   ├── mgf_plots.py
+        │   └── mgf_readers.py
+        ├── transformer/
+        │   └── __init__.py
+        └── utils.py
 ```
 
 To ensure that all the project's dependencies are installed correctly, we recommend using a Conda environment. 
-You can easily create the environment with the project's dependencies from the env.yaml file included in this repository.
+You can easily create the environment with the project's dependencies from the env.yml file included in this repository.
 
 ## Steps to set up the environment:
 
@@ -36,11 +42,11 @@ You can easily create the environment with the project's dependencies from the e
 git clone https://github.com/CarlosGomes00/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction
 ```
 
-3. Create the Conda environment from the env.yaml file: Navigate to the cloned project directory and run the following
+3. Create the Conda environment from the env.yml file: Navigate to the cloned project directory and run the following
 command to create the Conda environment with the required dependencies:
 
 ```
-conda env create -f requirements.yml 
+conda env create -f env.yml 
 ```
 
 4. Activate the Conda environment: Once the environment is created, activate it with the following command:
