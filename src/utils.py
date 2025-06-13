@@ -5,7 +5,7 @@ from typing import Tuple
 import matplotlib.pyplot as plt
 
 
-def path_check(mgf_data: str) -> bool:
+def path_check(mgf_data: str) -> None:
     """
     Checks if the path to the datasets has been found
 
@@ -13,14 +13,13 @@ def path_check(mgf_data: str) -> bool:
         mgf_data : str
             Path to the datasets to be used
 
-    Returns:
-        bool
-            True if file is found, False otherwise
+    Raises:
+        FileNotFoundError
+            If the file is not found at the specified path
     """
 
     if not os.path.exists(mgf_data):
-        print(f"Error: File could not be found {os.path.abspath(mgf_data)}")
-        return False
+        raise FileNotFoundError(f"Error: File could not be found {os.path.abspath(mgf_data)}")
     else:
         print("File found!")
 

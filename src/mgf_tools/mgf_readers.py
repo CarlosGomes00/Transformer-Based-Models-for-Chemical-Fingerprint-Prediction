@@ -19,12 +19,19 @@ def mgf_read_headers(mgf_data: str, num_spectra: int = 1):
     try:
         spectra = list(mgf.read(mgf_data, use_index=False))
 
+        first_spectrum_params = {}
         for i, spectrum in enumerate(spectra):
             if i >= num_spectra:
                 break
             print(f"Spectrum {i + 1} - Parameters:")
             print(spectrum['params'])
             print("\n")
+
+            if i == 0:
+                first_spectrum_params = spectrum['params']
+
+        return first_spectrum_params
+
     except Exception as e:
         print(f"Error reading .MGF file: {e}")
 

@@ -32,7 +32,7 @@ def check_spectrum_ids(mgf_data: str):
         raise ValueError(f"Error: Missing spectrum IDs in the following spectra: {', '.join(map(str, missing_ids))}")
 
     else:
-        print("All spectra have valid IDs")
+        return "All spectra have valid IDs"
 
 
 def check_mgf_data(spectra: list):
