@@ -47,7 +47,7 @@ if __name__ == "__main__":
     else:
         mgf_path = sys.argv[1]
         validation_results = validate_mgf_file(mgf_path)
-        if isinstance(validation_results, str):  # Se for uma string, é uma mensagem de erro
+        if isinstance(validation_results, str):
             print(validation_results)
         else:
             result_ids, result_compounds, result_headers = validation_results
