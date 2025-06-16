@@ -3,6 +3,7 @@ import os
 import numpy as np
 from typing import Tuple
 import matplotlib.pyplot as plt
+from src.config import mz_vocabs
 
 
 def path_check(mgf_data: str) -> None:
@@ -24,7 +25,7 @@ def path_check(mgf_data: str) -> None:
         print("File found!")
 
 
-def check_mz_precursor(spectrum: dict, mz_vocabs: list[float] = [50, 2000]) -> Tuple[float | None, bool]:
+def check_mz_precursor(spectrum: dict, mz_vocabs: list[float]) -> Tuple[float | None, bool]:
     """
     Extracts and checks whether the PrecursorMZ of a spectrum is within the permitted range
 
@@ -32,7 +33,7 @@ def check_mz_precursor(spectrum: dict, mz_vocabs: list[float] = [50, 2000]) -> T
         spectrum : dict
             Dictionary containing the spectrum datasets
         mz_vocabs : list
-            Sorted list of accepted lower and upper m/z limits
+            List of reference m/z values used for tokenization
 
     Returns:
         Tuple: precursor_mz value or None, Is precursor_mz between the given range?
@@ -197,7 +198,7 @@ def mgf_spectrum_deconvoluter(
     mz_array = mz_array[order]
     int_array = int_array[order]
 
-    # Filtra picos que estão dentro do intervalo definido por mz_vocabs
+    # Filtra picos que estão dentro do intervalo definido por mz_range_limits
     mz_min, mz_max = mz_vocabs[0], mz_vocabs[-1]
     in_range = (mz_array >= mz_min) & (mz_array <= mz_max)
     mz_array = mz_array[in_range]
