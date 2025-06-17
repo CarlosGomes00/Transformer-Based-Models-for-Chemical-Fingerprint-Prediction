@@ -24,7 +24,7 @@ The structure of the repository has been organized in a modular way to make it e
         │   ├── mgf_get.py
         │   ├── mgf_plots.py
         │   └── mgf_readers.py
-        ├── transformer/
+        ├── model/
         │   └── __init__.py
         └── utils.py
 ```
