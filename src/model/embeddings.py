@@ -2,13 +2,6 @@
 
 import torch
 import torch.nn as nn
-from src.config import mz_vocabs
-
-vocab_size = len(mz_vocabs)
-max_peaks_per_spectrum = 431
-max_seq_len = 1 + max_peaks_per_spectrum  # Quantidade de picos (percentil 95%) + o percursor
-d_model = 256
-dropout_rate = 0.1
 
 
 class PeakEmbedding(nn.Module):
@@ -40,7 +33,7 @@ class PrecursorEmbedding(nn.Module):
     """
     Layer to create precursor embeddings
 
-    Each peak (m/z_token, intensity) is transformed into a vector of d_model dimensions
+    Each precursor is transformed into a vector of d_model dimensions
     """
     def __init__(self, vocab_size: int, d_model: int, dropout_rate: float):
         super().__init__()
