@@ -210,6 +210,11 @@ def mgf_spectrum_deconvoluter(
             print(f'[{i}] Rejected after mz range filtering: {n_filtered_peaks} peaks left')
         return None
 
+    # voltar a ordenar os valores para o transformer conseguir pegar contexto
+    order_by_mz = np.argsort(mz_array)
+    mz_array = mz_array[order_by_mz]
+    int_array = int_array[order_by_mz]
+
     # tokenizar os valores de m/z e do precursor
     tokenized_mz = [np.argmin(np.abs(mz - mz_vocabs)) for mz in mz_array]
     tokenized_precursor = np.argmin(np.abs(precursor_mz - mz_vocabs))
