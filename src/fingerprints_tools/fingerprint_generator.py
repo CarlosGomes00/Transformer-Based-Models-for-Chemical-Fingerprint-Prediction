@@ -10,11 +10,12 @@ from deepmol.compound_featurization import MorganFingerprint
 import warnings
 warnings.filterwarnings('ignore')
 
-# LEGACY: Função antiga, utilizar a função que usa o DeepMol (smiles_to_fingerprint)
-def smiles_to_fingerprint_(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
-                          save_path: str = "fingerprints.csv") -> pd.DataFrame:
 
-    '''
+# LEGACY: Função antiga, utilizar a função que usa o DeepMol (smiles_to_fingerprint)
+def smiles_to_fingerprint_old(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2048, save: bool = False,
+                              save_path: str = "fingerprints.csv") -> pd.DataFrame:
+
+    """
     Converts SMILES strings into Morgan (ECFP-like) fingerprints using RDKit
 
     Parameters:
@@ -32,8 +33,7 @@ def smiles_to_fingerprint_(smiles: pd.DataFrame, radius: int = 1, nbits: int = 2
     Returns:
         pd.DataFrame
             DataFrame with the original info + Morgan fingerprints bits
-    '''
-
+    """
 
     if "smiles" not in smiles.columns:
         raise KeyError("The 'smiles' column was not found in DataFrame")
@@ -96,7 +96,8 @@ def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, retur
         smiles = smiles_data
 
     else:
-        raise TypeError("Provide a DataFrame or two lists, one with the SMILES and the other with their corresponding IDs")
+        raise TypeError("Provide a DataFrame or two lists, one with the SMILES and the other with their corresponding "
+                        "IDs")
 
     dataset = SmilesDataset(smiles, ids=ids)
 
@@ -108,4 +109,3 @@ def smiles_to_fingerprint(smiles_data, ids: list = None, n_jobs: int = 10, retur
         return dataset, df
 
     return dataset
-
