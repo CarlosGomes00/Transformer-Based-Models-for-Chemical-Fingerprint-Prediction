@@ -16,6 +16,7 @@ class SpectraCollateFn:
         self.padding_token_value = vocab_size
 
     def __call__(self, batch):
+
         """
         This method is called by the DataLoader
         Receives a list of training_tuple's from the Deconvoluter and returns tensors ready for the model
@@ -56,4 +57,4 @@ class SpectraCollateFn:
         int_batch = torch.stack(padded_int_tensors)
         attention_mask_batch = torch.stack(batch_attention_mask)
 
-        return mz_batch, int_batch, attention_mask_batch
+        return mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids
