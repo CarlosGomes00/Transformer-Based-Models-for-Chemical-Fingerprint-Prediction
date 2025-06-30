@@ -12,6 +12,10 @@ max_num_peaks = 431
 
 max_seq_len = 1 + max_num_peaks  # Quantidade de picos (percentil 95%) + o percursor
 
+noise_rmv_threshold = 0.01
+
+mass_error = 0.01
+
 d_model = 256
 
 dropout_rate = 0.1
