@@ -1,8 +1,8 @@
 """
-The preprocessing logic is inside the dataloader_f function.
+File similar to *main_dataloader* but the preprocessing logic is inside the dataloader_f function.
 
-This file would be used for quick tests, debugging, and scenarios where you want to specify a small num_spectra directly
-from the function call.
+This file will be used for quick tests, and scenarios where you want to specify a small num_spectra directly
+from the function call
 
 """
 
@@ -16,6 +16,13 @@ mgf_path = r"/Users/carla/PycharmProjects/Mestrado/Transformer-Based-Models-for-
 
 
 class SpectraDataset(Dataset):
+
+    """
+    Creates a PyTorch Dataset for processed mass spectra
+
+    This class encapsulates a list of spectra already processed (tuples containing m/z, intensities, mask and ID)
+    and provides a standard interface to the PyTorch DataLoader
+    """
 
     def __init__(self, processed_spectra):
         self.data = processed_spectra
@@ -32,6 +39,22 @@ collate_fn = SpectraCollateFn()
 
 def data_loader_f(batch_size: int = 4, shuffle: bool = True, num_workers: int = 0, num_spectra: int = None,
                   mgf_path: str = mgf_path):
+
+    """
+    Returns a DataLoader, with the flexibility to specify the num_spectra. Pre-processing is done at each call
+
+    Params:
+        batch_size : int
+            Number of samples in each batch
+        shuffle : bool
+            Whether to shuffle the data
+        num_workers : int
+            Number of subprocesses to use for data loading
+        num_spectra : int
+            Number of spectra to load
+        mgf_path : str
+            Path to mgf file
+    """
 
     mgf_spectra = mgf_get_spectra(mgf_path, num_spectra)
 

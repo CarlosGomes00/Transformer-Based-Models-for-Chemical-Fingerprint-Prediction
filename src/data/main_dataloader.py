@@ -16,6 +16,13 @@ processed_spectra = mgf_deconvoluter(mgf_data=mgf_spectra, mz_vocabs=mz_vocabs, 
 
 class SpectraDataset(Dataset):
 
+    """
+    Creates a PyTorch Dataset for processed mass spectra
+
+    This class encapsulates a list of spectra already processed (tuples containing m/z, intensities, mask and ID)
+    and provides a standard interface to the PyTorch DataLoader
+    """
+
     def __init__(self, processed_spectra):
         self.data = processed_spectra
 
@@ -33,9 +40,20 @@ spectra_dataset = SpectraDataset(processed_spectra)
 
 def data_loader(batch_size: int = 4, shuffle: bool = True, num_workers: int = 0):
 
+    """
+    Returns a DataLoader
+
+    Params:
+        batch_size : int
+            Number of samples in each batch
+        shuffle : bool
+            Whether to shuffle the data
+        num_workers : int
+            Number of subprocesses to use for data loading
+    """
+
     return DataLoader(spectra_dataset,
                       batch_size=batch_size,
                       collate_fn=collate_fn,
                       shuffle=shuffle,
                       num_workers=num_workers)
-
