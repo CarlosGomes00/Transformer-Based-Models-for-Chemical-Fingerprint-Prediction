@@ -29,7 +29,7 @@ class PeakEmbedding(nn.Module):
         return self.dropout(combined_emb)
 
 
-class PrecursorEmbedding(nn.Module):
+class PrecursorEmbeddingN(nn.Module):
     """
     Layer to create precursor embeddings
 
@@ -45,3 +45,16 @@ class PrecursorEmbedding(nn.Module):
         precursor_emb = self.precursor_embedding(tokenized_precursor)
 
         return self.dropout(precursor_emb)
+
+
+class PrecursorEmbedding(nn.Module):
+
+    def __init__(self, d_model: int, dropout_rate: float):
+        super().__init__()
+        self.precursor_embedding = nn.Parameter(torch.randn(1, d_model))
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def foward(self, batch_size: int) -> torch.Tensor:
+        emb = self.precursor_embedding.expand(batch_size, -1, -1)
+        return self.dropout(emb)
+    
