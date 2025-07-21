@@ -16,6 +16,6 @@ noise_rmv_threshold = 0.01
 
 mass_error = 0.01
 
-d_model = 256
+d_model = 128
 
 dropout_rate = 0.1
