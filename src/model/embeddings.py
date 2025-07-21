@@ -54,7 +54,7 @@ class PrecursorEmbedding(nn.Module):
         self.precursor_embedding = nn.Parameter(torch.randn(1, d_model))
         self.dropout = nn.Dropout(dropout_rate)
 
-    def foward(self, batch_size: int) -> torch.Tensor:
+    def forward(self, batch_size: int) -> torch.Tensor:
         emb = self.precursor_embedding.expand(batch_size, -1, -1)
         return self.dropout(emb)
     
