@@ -1,8 +1,8 @@
-from src.mgf_tools.mgf_checks import *
-from src.mgf_tools.mgf_readers import *
-from src.mgf_tools.mgf_get import mgf_get_spectra
+from data.mgf_tools.mgf_checks import *
+from data.mgf_tools.mgf_readers import *
+from data.mgf_tools.mgf_get import mgf_get_spectra
 from src.utils import path_check
-from src.mgf_tools.mgf_checks import check_mgf_data
+from data.mgf_tools.mgf_checks import check_mgf_data
 
 
 def validate_mgf_file(mgf_path: str):
