@@ -24,8 +24,4 @@ learning_rate = 0.001
 
 weight_decay = 1e-4
 
-num_epochs = 50
 
-batch_size =
-
-# device = 'cuda' if torch.cuda.is_available() else "cpu")
