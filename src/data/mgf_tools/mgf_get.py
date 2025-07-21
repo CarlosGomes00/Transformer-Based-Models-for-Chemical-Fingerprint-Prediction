@@ -64,6 +64,6 @@ def mgf_get_smiles(spectra: list[dict], as_dataframe: bool = False):
             smiles_list.append(smiles)
 
     if as_dataframe:
-        return pd.DataFrame({'id': ids, 'smiles': smiles_list})
+        return pd.DataFrame({'spectrum_id': ids, 'smiles': smiles_list})
     else:
-        return {'id': ids, 'smiles': smiles_list}
+        return {'spectrum_id': ids, 'smiles': smiles_list}
