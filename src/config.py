@@ -2,6 +2,8 @@ import numpy as np
 
 # Document for storing global variables
 
+[mgf_path = r"/Users/carla/PycharmProjects/Mestrado/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/datasets/raw/cleaned_gnps_library.mgf"
+
 mz_vocabs = np.arange(1.0, 5000.1, 0.1).tolist()
 
 vocab_size = len(mz_vocabs)  # Variável que serve como token para o padding
@@ -18,10 +20,14 @@ mass_error = 0.01
 
 d_model = 128
 
+num_layers = 4
+
+nhead = 4
+
 dropout_rate = 0.1
 
 learning_rate = 0.001
 
 weight_decay = 1e-4
 
-
+morgan_default_dim = 2048
