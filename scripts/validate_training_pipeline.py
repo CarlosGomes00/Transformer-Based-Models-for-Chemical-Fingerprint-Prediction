@@ -93,4 +93,6 @@ def training_validation():
 
 
 if __name__ == '__main__':
-    print('Transformer Pipeline validation')
+    print('Transformer Pipeline validation:')
+    training_validation()
+    print('Done')

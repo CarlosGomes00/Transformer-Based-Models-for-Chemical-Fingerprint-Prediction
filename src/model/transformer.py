@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.model.embeddings import PeakEmbedding, PrecursorEmbedding
+from src.model.embeddings import PeakEmbedding, PrecursorEmbeddingN
 from src.model.positional_encoding import PositionalEncoding
 from src.model.pooling import mean_pooling
 from src.model.fingerprint_head import FingerprintHead
@@ -12,7 +12,7 @@ class EncoderTransformer(nn.Module):
         super().__init__()
 
         self.peak_embedding = PeakEmbedding(vocab_size, d_model, dropout_rate)
-        self.precursor_embedding = PrecursorEmbedding(d_model, dropout_rate)
+        self.precursor_embedding = PrecursorEmbeddingN(vocab_size, d_model, dropout_rate)
         self.positional_encoding = PositionalEncoding(d_model, max_seq_len, dropout_rate)
 
         encoder_layer = nn.TransformerEncoderLayer(d_model, nhead=nhead, dropout=dropout_rate, batch_first=True)
@@ -23,8 +23,9 @@ class EncoderTransformer(nn.Module):
 
     def forward(self, tokenized_mz, intensities, attention_mask):
 
-        batch_size = tokenized_mz.size(0)
-        precursor_emb = self.precursor_embedding(batch_size)
+        precursor_tokens = tokenized_mz[:, 0:1]
+        precursor_emb = self.precursor_embedding(precursor_tokens)
+
         peak_emb = self.peak_embedding(tokenized_mz[:, 1:], intensities[:, 1:])
 
         x = torch.cat([precursor_emb, peak_emb], dim=1)

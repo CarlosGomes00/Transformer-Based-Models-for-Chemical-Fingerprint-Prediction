@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from src.config import max_seq_len, vocab_size
 from src.data.fingerprints_tools.fingerprint_generator import smiles_to_fingerprint
-from src.data.mgf_tools.mgf_get import mgf_get_smiles
 
 
 class SpectraCollateFn:
