@@ -9,6 +9,7 @@ from the function call
 from torch.utils.data import Dataset, DataLoader
 from src.data.collate_fn import SpectraCollateFn
 from data.mgf_tools.mgf_get import mgf_get_spectra
+from data.mgf_tools.mgf_get import mgf_get_smiles
 from src.utils import mgf_deconvoluter
 from src.config import *
 
@@ -34,9 +35,6 @@ class SpectraDataset(Dataset):
         return self.data[idx]
 
 
-collate_fn = SpectraCollateFn()
-
-
 def data_loader_f(batch_size: int = 4, shuffle: bool = True, num_workers: int = 0, num_spectra: int = None,
                   mgf_path: str = mgf_path):
 
@@ -58,9 +56,13 @@ def data_loader_f(batch_size: int = 4, shuffle: bool = True, num_workers: int = 
 
     mgf_spectra = mgf_get_spectra(mgf_path, num_spectra)
 
+    smiles_df = mgf_get_smiles(mgf_spectra, as_dataframe=True)
+
     processed_spectra = mgf_deconvoluter(mgf_data=mgf_spectra, mz_vocabs=mz_vocabs, min_num_peaks=min_num_peaks,
                                          max_num_peaks=max_num_peaks, noise_rmv_threshold=noise_rmv_threshold,
                                          mass_error=mass_error, log=True)
+
+    collate_fn = SpectraCollateFn(smiles_df)
 
     flexible_dataset = SpectraDataset(processed_spectra)
 
