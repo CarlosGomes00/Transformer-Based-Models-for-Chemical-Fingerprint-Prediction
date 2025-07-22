@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from src.config import max_seq_len, vocab_size
 from src.data.fingerprints_tools.fingerprint_generator import smiles_to_fingerprint
 from src.data.mgf_tools.mgf_get import mgf_get_smiles
@@ -29,7 +30,13 @@ class SpectraCollateFn:
             for _, row in fp_df.iterrows():
                 spectrum_id = str(row['spectrum_id'])
                 fingerprint_values = row.iloc[1:].values
-                self.fingerprints_cache[spectrum_id] = torch.tensor(fingerprint_values, dtype=torch.float32)
+
+                if fingerprint_values.dtype == 'object':
+                    fingerprint_values = np.array(fingerprint_values, dtype=np.float32)
+                else:
+                    fingerprint_values = fingerprint_values.astype(np.float32)
+
+                self.fingerprints_cache[spectrum_id] = torch.from_numpy(fingerprint_values)
 
             print(f'Cache created with {len(self.fingerprints_cache)} fingerprints')
 
