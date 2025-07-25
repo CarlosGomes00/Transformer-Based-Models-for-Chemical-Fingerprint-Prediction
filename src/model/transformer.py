@@ -21,12 +21,12 @@ class EncoderTransformer(nn.Module):
         self.pooling = mean_pooling
         self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
 
-    def forward(self, tokenized_mz, intensities, attention_mask):
+    def forward(self, mz_batch, int_batch, attention_mask):
 
-        precursor_tokens = tokenized_mz[:, 0:1]
+        precursor_tokens = mz_batch[:, 0:1]
         precursor_emb = self.precursor_embedding(precursor_tokens)
 
-        peak_emb = self.peak_embedding(tokenized_mz[:, 1:], intensities[:, 1:])
+        peak_emb = self.peak_embedding(mz_batch[:, 1:], int_batch[:, 1:])
 
         x = torch.cat([precursor_emb, peak_emb], dim=1)
 
