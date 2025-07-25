@@ -1,6 +1,3 @@
-import torch
-
-
 def mean_pooling(x, attention_mask):
 
     """
