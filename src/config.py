@@ -10,7 +10,7 @@ vocab_size = len(mz_vocabs)  # Variável que serve como token para o padding
 
 min_num_peaks = 5
 
-max_num_peaks = 431
+max_num_peaks = 431 # Quantidade definida na reunião
 
 max_seq_len = 1 + max_num_peaks  # Quantidade de picos (percentil 95%) + o percursor
 
@@ -28,6 +28,6 @@ dropout_rate = 0.1
 
 learning_rate = 0.001
 
-weight_decay = 1e-4
+weight_decay = 1e-4   # Padrão para regularização L2
 
 morgan_default_dim = 2048

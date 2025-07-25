@@ -5,7 +5,15 @@ import torch.nn as nn
 class FingerprintHead(nn.Module):
 
     """
-    Class that applies the transfomer's final activation function, Sigmoid
+    Final layer that maps aggregated spectral features to chemical fingerprints
+    This layer transforms the pooled representation from the transformer encoder into binary probability
+    predictions for each bit of a fingerprint
+
+    Parameters:
+        d_model : int
+            Dimension of input features from the pooling layer
+        fingerprint_dim : int, 2048 by default
+            Size of output fingerprint in bits
     """
 
     def __init__(self, d_model, fingerprint_dim=2048):

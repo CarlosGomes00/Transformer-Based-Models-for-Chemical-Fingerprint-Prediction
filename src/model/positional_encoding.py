@@ -6,7 +6,13 @@ import torch.nn as nn
 class PositionalEncoding(nn.Module):
 
     """
-    Adds positional information to the input embeddings
+    Adds sinusoidal positional information to the input embeddings
+
+    Parameters:
+        d_model : int
+            The dimension of the input embeddings
+        max_seq_len : int
+            Size of the tokens in a spectrum (including the precursor)
     """
 
     def __init__(self, d_model: int, max_seq_len: int, dropout_rate: float):
@@ -26,5 +32,18 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe.unsqueeze(0))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+
+        """
+        Add positional encoding to input embeddings
+
+        Parameters:
+            x : torch.Tensor
+                Input embeddings of shape [batch_size, seq_len, d_model]
+
+        Returns:
+            torch.Tensor
+                Input embeddings with positional encoding added, followed by dropout
+        """
+
         x = x + self.pe[:, :x.size(1)]
         return self.dropout(x)

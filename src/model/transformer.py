@@ -8,6 +8,26 @@ from src.model.fingerprint_head import FingerprintHead
 
 class EncoderTransformer(nn.Module):
 
+    """
+    Transformer encoder model for predicting chemical fingerprints from mass spectra
+
+    Parameters:
+        vocab_size : int
+            Size of the m/z vocabulary for token embeddings
+        d_model : int
+            Dimension of embeddings
+        nhead : int
+            Number of attention heads in each transformer layer
+        num_layers : int
+            Number of transformer encoder layers to stack
+        dropout_rate : float
+            Dropout probability applied throughout the model
+        fingerprint_dim : int, 2048 by default
+            Size of output fingerprint
+        max_seq_len : int, 432 by default
+            Maximum sequence length for positional encoding pre-computation
+    """
+
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim=2048, max_seq_len=432):
         super().__init__()
 
@@ -22,6 +42,22 @@ class EncoderTransformer(nn.Module):
         self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
 
     def forward(self, mz_batch, int_batch, attention_mask):
+        """
+        Forward pass through the transformer model
+
+        Parameters:
+            mz_batch : torch.Tensor
+                Tokenized m/z values with shape [batch_size, max_seq_len]
+            int_batch : torch.Tensor
+                Normalized intensity values with shape [batch_size, max_seq_len]
+            attention_mask : torch.Tensor
+                Binary mask with shape [batch_size, max_seq_len]
+
+        Returns:
+            torch.Tensor
+                Predicted fingerprint probabilities with shape [batch_size, fingerprint_dim].
+
+        """
 
         precursor_tokens = mz_batch[:, 0:1]
         precursor_emb = self.precursor_embedding(precursor_tokens)
