@@ -107,8 +107,8 @@ def mgf_spectrum_deconvoluter(
         noise_rmv_threshold: float,
         mass_error: float,
         mz_vocabs: list,
-        allowed_spectral_entropy: bool,
-        log: bool):
+        log: bool,
+        allowed_spectral_entropy: bool = True):
 
     """
     Applies a series of preprocessing steps including noise removal, peak count validation, precursor m/z validation and
@@ -254,7 +254,7 @@ def mgf_spectrum_deconvoluter(
 
 
 def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rmv_threshold, mass_error,
-                     allowed_spectral_entropy, log, plot=False):
+                     log, allowed_spectral_entropy=True, plot=False):
 
     """
     Iterates through a list of MGF spectra, applying filtering and preprocessing steps via `mgf_spectrum_deconvoluter`
