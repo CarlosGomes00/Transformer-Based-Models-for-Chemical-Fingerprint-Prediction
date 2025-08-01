@@ -107,6 +107,7 @@ def mgf_spectrum_deconvoluter(
         noise_rmv_threshold: float,
         mass_error: float,
         mz_vocabs: list,
+        allowed_spectral_entropy: bool,
         log: bool):
 
     """
@@ -227,6 +228,7 @@ def mgf_spectrum_deconvoluter(
         return None
     int_array = int_array / int_sum
 
+
     training_tuple = (
         spectrum_id,
         tokenized_mz,
@@ -295,3 +297,40 @@ def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rm
                 plt.show()
 
     return processed_spectra
+
+
+def spectral_entropy_calculator(spectra, allowed_weighted_spectral_entropy : bool = True):
+
+    """
+    Calculate spectral entropy for mass spectrometry data following IDSL_Mint methodology
+
+    Parameters:
+        spectra : array-like
+            Input spectral data containing m/z and intensity pairs
+        allowed_weighted_spectral_entropy : bool, default = True
+            Whether to apply weighted spectral entropy transformation
+
+    Returns:
+        tuple[float, np.ndarray]
+    """
+
+    spectra = np.array(spectra).reshape(-1, 2)
+
+    if np.sum(spectra[:, 1]) == 0:
+        return 0.0, spectra
+
+    spectra[:, 1] = spectra[:, 1] / np.sum(spectra[:, 1])
+
+    spectral_entropy = -np.sum(spectra[:, 1] * np.log(spectra[:, 1]))
+
+    if allowed_weighted_spectral_entropy:
+
+        if spectral_entropy < 3:
+            weights = 0.25 + spectral_entropy * 0.25
+            spectra[:, 1] = np.power(spectra[:, 1], weights)
+
+            spectra[:, 1] = spectra[:, 1]/np.sum(spectra[:, 1])
+
+            spectral_entropy = -np.sum(spectra[:, 1] * np.log(spectra[:, 1]))
+
+    return spectral_entropy, spectra
