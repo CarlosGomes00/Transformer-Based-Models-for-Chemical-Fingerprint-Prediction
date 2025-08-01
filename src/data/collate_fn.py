@@ -82,10 +82,10 @@ class SpectraCollateFn:
 
         for training_tuple in batch:
 
-            spectrum_id, tokenized_mz, tokenized_precursor, int_array = training_tuple
+            spectrum_id, tokenized_precursor, tokenized_mz, precursor_int, int_array = training_tuple
 
             mz_tokens_list = [tokenized_precursor] + tokenized_mz
-            int_tokens_list = [0.0] + int_array.tolist()
+            int_tokens_list = [precursor_int] + int_array.tolist()
 
             num_padding_needed = self.max_length - len(mz_tokens_list)
 
