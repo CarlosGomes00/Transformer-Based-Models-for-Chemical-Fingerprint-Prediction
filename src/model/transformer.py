@@ -42,6 +42,7 @@ class EncoderTransformer(nn.Module):
         self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
 
     def forward(self, mz_batch, int_batch, attention_mask):
+
         """
         Forward pass through the transformer model
 

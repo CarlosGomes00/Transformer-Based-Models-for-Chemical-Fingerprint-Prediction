@@ -8,8 +8,8 @@ def training_validation():
 
     print('Loading Data')
     try:
-        train_data = data_loader_f(batch_size=4,
-                                   num_spectra=20,
+        train_data = data_loader_f(batch_size=5,
+                                   num_spectra=50,
                                    shuffle=True,
                                    mgf_path=mgf_path)
 

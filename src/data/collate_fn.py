@@ -69,6 +69,7 @@ class SpectraCollateFn:
 
         """
         This method is called by the DataLoader
+
         Receives a list of training_tuple's from the Deconvoluter and returns tensors ready for the model
         """
 
