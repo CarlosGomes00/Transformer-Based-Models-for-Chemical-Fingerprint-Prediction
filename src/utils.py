@@ -128,6 +128,9 @@ def mgf_spectrum_deconvoluter(
             Tolerance for peak merging in m/z units during integration
         mz_vocabs : list
             List of reference m/z values used for tokenization
+        allowed_spectral_entropy : bool
+            If True, calculates spectral entropy as precursor intensity following
+            If False, uses fixed value (2.0) as fallback
         log : bool
             If True, it prints any error messages that may be triggered when the function is used
 
@@ -228,19 +231,30 @@ def mgf_spectrum_deconvoluter(
         return None
     int_array = int_array / int_sum
 
+    if allowed_spectral_entropy:
+        spectrum_pairs = np.column_stack((mz_array, int_array))
+
+        spectral_entropy, processed_spectrum = spectral_entropy_calculator(spectrum_pairs)
+
+        int_array = processed_spectrum[:, 1]
+        precursor_int = spectral_entropy
+
+    else:
+        precursor_int = 2.0
 
     training_tuple = (
         spectrum_id,
-        tokenized_mz,
         tokenized_precursor,
+        tokenized_mz,
+        precursor_int,
         int_array,
     )
 
     return training_tuple
 
 
-def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rmv_threshold, mass_error, log,
-                     plot=False):
+def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rmv_threshold, mass_error,
+                     allowed_spectral_entropy, log, plot=False):
 
     """
     Iterates through a list of MGF spectra, applying filtering and preprocessing steps via `mgf_spectrum_deconvoluter`
@@ -259,6 +273,9 @@ def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rm
             the maximum intensity are discarded
         mass_error : float
             Tolerance for peak merging in m/z units during integration
+        allowed_spectral_entropy : bool
+            If True, calculates spectral entropy as precursor intensity following
+            If False, uses fixed value (2.0) as fallback
         log : bool
             If True, it prints any error messages that may be triggered when the function is used
         plot : bool, optional
@@ -275,6 +292,7 @@ def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rm
             noise_rmv_threshold=noise_rmv_threshold,
             mass_error=mass_error,
             mz_vocabs=mz_vocabs,
+            allowed_spectral_entropy=allowed_spectral_entropy,
             log=log,
         )
 
@@ -282,10 +300,11 @@ def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rm
             processed_spectra.append(result)
 
             if plot:
-                spectrum_id, tokenized_mz, tokenized_precursor, intensities = result
+                spectrum_id, tokenized_precursor, tokenized_mz, precursor_int, intensities = result
                 print(f"\nID: {spectrum_id}")
                 print(f"Tokenized m/z: {tokenized_mz}")
                 print(f"Tokenized precursor: {tokenized_precursor}")
+                print(f"Precursor intensity (Entropy): {precursor_int}")
                 print(f"Normalized intensities: {intensities}")
 
                 plt.figure(figsize=(10, 5))
@@ -299,7 +318,7 @@ def mgf_deconvoluter(mgf_data, mz_vocabs, min_num_peaks, max_num_peaks, noise_rm
     return processed_spectra
 
 
-def spectral_entropy_calculator(spectra, allowed_weighted_spectral_entropy : bool = True):
+def spectral_entropy_calculator(spectra, allowed_weighted_spectral_entropy: bool = True):
 
     """
     Calculate spectral entropy for mass spectrometry data following IDSL_Mint methodology
