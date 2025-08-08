@@ -6,6 +6,8 @@ from the function call
 
 """
 
+# LEGACY - Use data_loader to load the data
+
 from torch.utils.data import Dataset, DataLoader
 from src.data.collate_fn import SpectraCollateFn
 from data.mgf_tools.mgf_get import mgf_get_spectra
