@@ -68,10 +68,12 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
         print(f"Test:  {len(splits['test'])} samples ({len(splits['test']) / len(dataset) * 100:.1f}%)")
 
         split_pkl = output_dir / 'split_ids.pkl'
-        if split_pkl.exists():
-            print(f'Split IDs saved → {split_pkl}')
+        fingerprints_pkl = output_dir / 'fingerprints.pkl'
+
+        if split_pkl.exists() and fingerprints_pkl.exists():
+            print(f'Split IDs and Fingerprints saved')
         else:
-            print('split_ids.pkl not found')
+            print('Files not found')
 
         return splits
 
