@@ -13,57 +13,38 @@ class SpectraCollateFn:
     fingerprint targets for supervised training
     """
 
-    def __init__(self, smiles_df):
+    def __init__(self, fingerprints_df):
         self.max_length = max_seq_len
         self.padding_token_value = vocab_size
-        self.smiles_df = smiles_df.copy()
+        self.fingerprints_df = fingerprints_df.copy()
 
         self.fingerprints_cache = {}
-        self._precompute_fingerprints()
+        self._load_precomputed_fingerprints()
 
-    def _precompute_fingerprints(self):
+    def _load_precomputed_fingerprints(self):
 
         try:
-            datasets, fp_df = smiles_to_fingerprint(self.smiles_df, return_df=True)
-
-            for _, row in fp_df.iterrows():
+            for _, row in self.fingerprints_df.iterrows():
                 spectrum_id = str(row['spectrum_id'])
-                fingerprint_values = row.iloc[1:].values
 
-                if fingerprint_values.dtype == 'object':
-                    fingerprint_values = np.array(fingerprint_values, dtype=np.float32)
-                else:
-                    fingerprint_values = fingerprint_values.astype(np.float32)
+                fingerprint_cols = [col for col in row.index if col.startswith('fp_')]
+                fingerprint_values = row[fingerprint_cols].values.astype(np.float32)
 
                 self.fingerprints_cache[spectrum_id] = torch.from_numpy(fingerprint_values)
 
-            print(f'Cache created with {len(self.fingerprints_cache)} fingerprints')
-
         except Exception as e:
-            print(f'Pre-computing fingerprints error {e}')
+            print(f'Error loading pre-computed fingerprints {e}')
             self.fingerprints_cache = {}
 
     def _get_fingerprint_for_id(self, spectrum_id: str) -> torch.Tensor:
 
+        spectrum_id = str(spectrum_id)
+
         if spectrum_id in self.fingerprints_cache:
             return self.fingerprints_cache[spectrum_id]
-
-        spectrum_row = self.smiles_df[self.smiles_df['spectrum id'] == spectrum_id]
-
-        if not spectrum_row.empty:
-            try:
-                dataset, fp_df = smiles_to_fingerprint(spectrum_row, return_df=True)
-                fingerprint_values = fp_df.iloc[0, 1:].values
-                fingerprint_tensor = torch.tensor(fingerprint_values, dtype=torch.float32)
-
-                self.fingerprints_cache[spectrum_id] = fingerprint_tensor
-                return fingerprint_tensor
-
-            except Exception as e:
-                print(f'Processing error {spectrum_id}: {e}')
-
-        print(f'Using fingerprint zero for {spectrum_id}')
-        return torch.zeros(2048, dtype=torch.float32)
+        else:
+            print(f'Fingerprint not found for {spectrum_id}, using zeros')
+            return torch.zeros(2048, dtype=torch.float32)
 
     def __call__(self, batch):
 
