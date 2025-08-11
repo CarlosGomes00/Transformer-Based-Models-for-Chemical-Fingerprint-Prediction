@@ -1,15 +1,15 @@
 import torch
 import torch.nn as nn
-from src.model.embeddings import PeakEmbedding, PrecursorEmbeddingN
-from src.model.positional_encoding import PositionalEncoding
-from src.model.pooling import mean_pooling
-from src.model.fingerprint_head import FingerprintHead
+from src.models.embeddings import PeakEmbedding, PrecursorEmbeddingN
+from src.models.positional_encoding import PositionalEncoding
+from src.models.pooling import mean_pooling
+from src.models.fingerprint_head import FingerprintHead
 
 
 class EncoderTransformer(nn.Module):
 
     """
-    Transformer encoder model for predicting chemical fingerprints from mass spectra
+    Transformer encoder models for predicting chemical fingerprints from mass spectra
 
     Parameters:
         vocab_size : int
@@ -21,7 +21,7 @@ class EncoderTransformer(nn.Module):
         num_layers : int
             Number of transformer encoder layers to stack
         dropout_rate : float
-            Dropout probability applied throughout the model
+            Dropout probability applied throughout the models
         fingerprint_dim : int, 2048 by default
             Size of output fingerprint
         max_seq_len : int, 432 by default
@@ -44,7 +44,7 @@ class EncoderTransformer(nn.Module):
     def forward(self, mz_batch, int_batch, attention_mask):
 
         """
-        Forward pass through the transformer model
+        Forward pass through the transformer models
 
         Parameters:
             mz_batch : torch.Tensor

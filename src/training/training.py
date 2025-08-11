@@ -10,7 +10,7 @@ def training_setup(model):
 
     Parameters:
         model : EncoderTransformer
-            The transformer model to be trained
+            The transformer models to be trained
 
     Returns:
         tuple[nn.BCELoss, optim.Adam]
@@ -33,7 +33,7 @@ def train_step(model, batch, criterion, optimizer):
 
     Parameters:
         model : EncoderTransformer
-            The transformer model being trained. Must be in training mode
+            The transformer models being trained. Must be in training mode
         batch : tuple
             Batch data from the DataLoader
         criterion : nn.BCELoss
@@ -65,7 +65,7 @@ def train_step_lightning(model, batch, criterion):
 
     Parameters:
         model : EncoderTransformer
-            The transformer model being trained
+            The transformer models being trained
         batch : tuple
             Batch data from the DataLoader
         criterion : nn.BCELoss

@@ -1,5 +1,5 @@
 from src.data.data_loader import data_loader
-from src.model.transformer import EncoderTransformer
+from src.models.transformer import EncoderTransformer
 from src.training.training import training_setup, train_step
 from src.config import *
 

@@ -1,7 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from src.training.training import training_setup, train_step_lightning
-from src.model.transformer import EncoderTransformer
+from src.models.transformer import EncoderTransformer
 from src.config import *
 
 

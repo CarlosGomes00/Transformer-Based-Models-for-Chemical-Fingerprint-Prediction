@@ -9,7 +9,7 @@ class SpectraCollateFn:
     """
     A custom collation function for PyTorch DataLoader to prepare mass spectrometry data batches
     It combines precursor and peak tokens/intensities, applies padding, and generates attention masks
-    for variable-length sequences, ensuring fixed-size tensors for model input, and includes real
+    for variable-length sequences, ensuring fixed-size tensors for models input, and includes real
     fingerprint targets for supervised training
     """
 
@@ -51,7 +51,7 @@ class SpectraCollateFn:
         """
         This method is called by the DataLoader
 
-        Receives a list of training_tuple's from the Deconvoluter and returns tensors ready for the model
+        Receives a list of training_tuple's from the Deconvoluter and returns tensors ready for the models
         """
 
         padded_mz_tensors = []
