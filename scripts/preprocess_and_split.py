@@ -62,7 +62,7 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
     print('\n4. Data spliting')
     try:
         splits = make_split(dataset, seed, output_dir)
-        print(f"Split criado com seed={seed}")
+        print(f"Split created with seed={seed}")
         print(f"Train: {len(splits['train'])} samples ({len(splits['train']) / len(dataset) * 100:.1f}%)")
         print(f"Validation:   {len(splits['val'])} samples ({len(splits['val']) / len(dataset) * 100:.1f}%)")
         print(f"Test:  {len(splits['test'])} samples ({len(splits['test']) / len(dataset) * 100:.1f}%)")

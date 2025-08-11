@@ -1,4 +1,4 @@
-from src.data.flexible_dataloader import data_loader_f
+from src.data.data_loader import data_loader
 from src.model.transformer import EncoderTransformer
 from src.training.training import training_setup, train_step
 from src.config import *
@@ -8,10 +8,8 @@ def training_validation():
 
     print('Loading Data')
     try:
-        train_data = data_loader_f(batch_size=5,
-                                   num_spectra=50,
-                                   shuffle=True,
-                                   mgf_path=mgf_path)
+        loaders = data_loader(batch_size=5, num_spectra=50, shuffle=True, mgf_path=mgf_path)
+        train_data = loaders['train']
 
     except Exception as e:
         print(f'Error found: {e}')
