@@ -4,6 +4,8 @@ dataset
 .idea/
 dev_notes
 src/data/artifacts
+src/data/flexible_dataloader.py
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
