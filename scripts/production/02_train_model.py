@@ -1,9 +1,9 @@
 from src.data.data_loader import data_loader
 from src.models.transformer_lightning import TransformerLightning
 from src.config import mgf_path, vocab_size, morgan_default_dim
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
-from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch import Trainer, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning import Trainer, seed_everything
 
 
 def train_model(seed,
@@ -49,8 +49,8 @@ if __name__ == '__main__':
     NUM_LAYERS = 4
     DROPOUT_RATE = 0.1
 
-    FAST_DEV_RUN = True
-    MAX_EPOCHS = 100
+    FAST_DEV_RUN = False
+    MAX_EPOCHS = 10
 
     best_model = train_model(seed=SEED,
                              mgf_path=MGF_PATH,

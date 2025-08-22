@@ -3,6 +3,9 @@ import os
 import numpy as np
 from typing import Tuple
 import matplotlib.pyplot as plt
+import torch
+from rdkit import DataStructs
+from rdkit.DataStructs import ExplicitBitVect
 from src.config import mz_vocabs
 
 
@@ -353,3 +356,17 @@ def spectral_entropy_calculator(spectra, allowed_weighted_spectral_entropy: bool
             spectral_entropy = -np.sum(spectra[:, 1] * np.log(spectra[:, 1]))
 
     return spectral_entropy, spectra
+
+
+def tensor_to_bitvect(t: torch.Tensor) -> ExplicitBitVect:
+
+    """
+    Converts a 1-D tensor (0/1) to RDKit ExplicitBitVect to calculate Tanimoto Simularity
+    """
+
+    arr = t.cpu().numpy().astype(np.uint8)
+    bv = ExplicitBitVect(len(arr))
+    on_bits = arr.nonzero()[0].tolist()
+    for i in on_bits:
+        bv.SetBit(i)
+    return bv

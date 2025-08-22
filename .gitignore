@@ -5,6 +5,7 @@ dataset
 dev_notes
 src/data/artifacts
 src/data/flexible_dataloader.py
+scripts/production/outputs
 
 
 # Byte-compiled / optimized / DLL files

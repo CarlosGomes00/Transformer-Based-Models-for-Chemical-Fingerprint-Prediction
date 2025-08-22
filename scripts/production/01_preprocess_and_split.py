@@ -83,7 +83,7 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
 
 
 if __name__ == '__main__':
-    seed = 0
+    seed = 1
     output_dir = REPO_ROOT / "src/data/artifacts"
 
     results = process_and_split(
