@@ -4,7 +4,6 @@ dataset
 .idea/
 dev_notes
 src/data/artifacts
-src/data/flexible_dataloader.py
 scripts/production/outputs
 
 

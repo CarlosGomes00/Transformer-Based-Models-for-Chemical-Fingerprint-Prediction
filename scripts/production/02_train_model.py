@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import Trainer, seed_everything
 
 
-def train_model(seed,
+def train_model(seed:int,
                 mgf_path,
                 batch_size=32,
                 nhead=4,
@@ -27,7 +27,7 @@ def train_model(seed,
         ModelCheckpoint(monitor='val_loss',
                         mode='min',
                         save_top_k=3,
-                        dirpath='outputs/checkpoints',
+                        dirpath=f'outputs/checkpoints/{seed}',
                         filename='transformer-{epoch:02d}-{val_loss:.4f}')
     ]
 

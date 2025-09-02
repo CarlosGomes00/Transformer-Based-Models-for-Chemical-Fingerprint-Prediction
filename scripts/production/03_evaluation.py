@@ -4,7 +4,7 @@ from src.models.transformer_lightning import TransformerLightning
 from src.data.data_loader import data_loader
 from src.config import mgf_path
 from utils import tensor_to_bitvect
-import os
+from pathlib import Path
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score
 from rdkit.DataStructs import TanimotoSimilarity
@@ -14,11 +14,16 @@ import json
 
 def evaluate_model(model_checkpoint_path: str,
                    mgf_path: str,
+                   seed: int,
                    batch_size: int = None,
                    threshold: float = 0.5,
                    save_fp: bool = False) -> dict:
 
-    os.makedirs("outputs/eval", exist_ok=True)
+    eval_dir = Path("outputs/eval") / str(seed)
+    eval_dir.mkdir(parents=True, exist_ok=True)
+
+    metrics_path = eval_dir / "metrics.json"
+    fp_path = eval_dir / "fingerprints.pt"
 
     # Dar load do modelo
     model = TransformerLightning.load_from_checkpoint(model_checkpoint_path)
@@ -50,7 +55,7 @@ def evaluate_model(model_checkpoint_path: str,
             mz_batch = mz_batch.to(device)
             int_batch = int_batch.to(device)
             attention_mask_batch = attention_mask_batch.to(device)
-            #precursor_mask_batch = precursor_mask_batch.to(device)
+            # precursor_mask_batch = precursor_mask_batch.to(device)
 
             logits = model(mz_batch, int_batch, attention_mask_batch)
             preds.append(logits.cpu())
@@ -79,11 +84,11 @@ def evaluate_model(model_checkpoint_path: str,
                'f1': float(f1),
                'mean_tanimoto': mean_tanimoto}
 
-    with open("outputs/eval/metrics.json", 'w') as f:
+    with open(metrics_path, 'w') as f:
         json.dump(results, f, indent=2)
 
     if save_fp:
-        torch.save({"pred_float": pred_float, "pred_bins": pred_bins}, "outputs/eval/fingerprints.pt")
+        torch.save({"pred_float": pred_float, "pred_bins": pred_bins}, fp_path)
 
     return results
 
@@ -94,4 +99,5 @@ if __name__ == "__main__":
                    mgf_path=mgf_path,
                    batch_size=None,
                    threshold=0.5,
-                   save_fp=True)
+                   save_fp=True,
+                   seed=0)
