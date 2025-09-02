@@ -5,7 +5,10 @@ from deepmol.splitters import MultiTaskStratifiedSplitter
 from pathlib import Path
 
 
-def make_split(dataset, seed, output_dir):
+def make_split(dataset, seed, output_dir,
+               frac_train: float = 0.8,
+               frac_valid: float = 0.1,
+               frac_test: float = 0.1):
 
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -14,9 +17,9 @@ def make_split(dataset, seed, output_dir):
 
     train_dataset, val_dataset, test_dataset = splitter.train_valid_test_split(
         dataset,
-        frac_train=0.8,
-        frac_valid=0.1,
-        frac_test=0.1,
+        frac_train=frac_train,
+        frac_valid=frac_valid,
+        frac_test=frac_test,
         seed=seed
     )
 

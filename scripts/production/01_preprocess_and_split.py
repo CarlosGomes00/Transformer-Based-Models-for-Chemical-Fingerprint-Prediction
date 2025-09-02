@@ -9,7 +9,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None):
+def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None,
+                      frac_train: float = 0.8,
+                      frac_valid: float = 0.1,
+                      frac_test: float = 0.1):
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -61,7 +64,7 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
 
     print('\n4. Data spliting')
     try:
-        splits = make_split(dataset, seed, output_dir)
+        splits = make_split(dataset, seed, output_dir, frac_train=frac_train, frac_valid=frac_valid, frac_test=frac_test)
         print(f"Split created with seed={seed}")
         print(f"Train: {len(splits['train'])} samples ({len(splits['train']) / len(dataset) * 100:.1f}%)")
         print(f"Validation:   {len(splits['val'])} samples ({len(splits['val']) / len(dataset) * 100:.1f}%)")
