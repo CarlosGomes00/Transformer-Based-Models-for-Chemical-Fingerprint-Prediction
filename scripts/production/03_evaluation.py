@@ -95,9 +95,9 @@ def evaluate_model(model_checkpoint_path: str,
 
 if __name__ == "__main__":
 
-    evaluate_model(model_checkpoint_path="outputs/checkpoints/transformer-epoch=07-val_loss=0.2365.ckpt",
+    evaluate_model(model_checkpoint_path="outputs/checkpoints/2/transformer-epoch=10-val_loss=0.0890.ckpt",
                    mgf_path=mgf_path,
                    batch_size=None,
                    threshold=0.5,
                    save_fp=True,
-                   seed=0)
+                   seed=2)

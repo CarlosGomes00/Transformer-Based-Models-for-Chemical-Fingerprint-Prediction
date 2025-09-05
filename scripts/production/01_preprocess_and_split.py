@@ -6,7 +6,7 @@ from deepmol.datasets import SmilesDataset
 from src.data.stratified_split import make_split
 from src.config import *
 from pathlib import Path
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None,
@@ -86,12 +86,12 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
 
 
 if __name__ == '__main__':
-    seed = 1
+    seed = 2
     output_dir = REPO_ROOT / "src/data/artifacts"
 
     results = process_and_split(
         mgf_path=mgf_path,
         seed=seed,
         output_dir=output_dir,
-        num_spectra=100
+        num_spectra=5000
     )

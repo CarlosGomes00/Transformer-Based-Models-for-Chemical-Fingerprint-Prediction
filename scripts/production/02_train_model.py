@@ -43,14 +43,14 @@ def train_model(seed:int,
 
 if __name__ == '__main__':
     MGF_PATH = mgf_path
-    SEED = 0
+    SEED = 2
     BATCH_SIZE = 32
     NHEAD = 4
     NUM_LAYERS = 4
     DROPOUT_RATE = 0.1
 
     FAST_DEV_RUN = False
-    MAX_EPOCHS = 10
+    MAX_EPOCHS = 50
 
     best_model = train_model(seed=SEED,
                              mgf_path=MGF_PATH,
