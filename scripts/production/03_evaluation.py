@@ -68,9 +68,14 @@ def evaluate_model(model_checkpoint_path: str,
     y_true = targets.numpy().ravel()
     y_pred = pred_bins.numpy().ravel()
 
-    precision = precision_score(y_true, y_pred, average='macro')
-    recall = recall_score(y_true, y_pred, average='macro')
-    f1 = f1_score(y_true, y_pred, average='macro')
+    precision_macro = precision_score(y_true, y_pred, average='macro')
+    precision_weighted = precision_score(y_true, y_pred, average='weighted')
+
+    recall_macro = recall_score(y_true, y_pred, average='macro')
+    recall_weighted = recall_score(y_true, y_pred, average='weighted')
+
+    f1_macro = f1_score(y_true, y_pred, average='macro')
+    f1_weighted = f1_score(y_true, y_pred, average='weighted')
 
     true_bvs = [tensor_to_bitvect(fp) for fp in targets]
     pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
@@ -79,9 +84,12 @@ def evaluate_model(model_checkpoint_path: str,
     mean_tanimoto = float(np.mean(tanimoto_values))
 
     results = {'n_samples': int(targets.shape[0]),
-               'precision': float(precision),
-               'recall': float(recall),
-               'f1': float(f1),
+               'precision_macro': float(precision_macro),
+               'precision_weighted': float(precision_weighted),
+               'recall_macro': float(recall_macro),
+               'recall_weighted': float(recall_weighted),
+               'f1_macro': float(f1_macro),
+               'f1_weighted': float(f1_weighted),
                'mean_tanimoto': mean_tanimoto}
 
     with open(metrics_path, 'w') as f:
@@ -95,9 +103,9 @@ def evaluate_model(model_checkpoint_path: str,
 
 if __name__ == "__main__":
 
-    evaluate_model(model_checkpoint_path="outputs/checkpoints/2/transformer-epoch=10-val_loss=0.0890.ckpt",
+    evaluate_model(model_checkpoint_path="outputs/checkpoints/transformer-epoch=07-val_loss=0.2365.ckpt",
                    mgf_path=mgf_path,
                    batch_size=None,
                    threshold=0.5,
                    save_fp=True,
-                   seed=2)
+                   seed=0)
