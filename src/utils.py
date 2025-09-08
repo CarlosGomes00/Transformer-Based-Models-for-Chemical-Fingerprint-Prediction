@@ -1,6 +1,7 @@
 # Generic functions that can be reused
 import os
 import numpy as np
+import pandas as pd
 from typing import Tuple
 import matplotlib.pyplot as plt
 import torch
@@ -370,3 +371,81 @@ def tensor_to_bitvect(t: torch.Tensor) -> ExplicitBitVect:
     for i in on_bits:
         bv.SetBit(i)
     return bv
+
+
+def generate_data_stats(y_train: np.ndarray, y_test: np.ndarray, y_val: np.ndarray = None):
+    """
+    Parameters
+    ----------
+    y_train : np.ndarray
+        Labels of the train set
+    y_test : np.ndarray
+        Labels of the test set
+    y_val : np.ndarray, optional
+        Labels of the validation set, by default None
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, Any]
+        DataFrame with the stats of the split, styled table
+    """
+    y_test_sum = np.sum(y_test, axis=0)
+    y_train_sum = np.sum(y_train, axis=0)
+
+    sum_of_all = pd.DataFrame([y_train_sum, y_test_sum], index=["train", "test"])
+
+    if y_val is not None:
+        y_val_sum = np.sum(y_val, axis=0)
+        sum_of_all = pd.DataFrame([y_train_sum, y_test_sum, y_val_sum], index=["train", "test", "validation"])
+        sum_of_all.loc['Validation relative split', :] = sum_of_all.loc['validation', :] / (
+                    sum_of_all.loc['train', :] + sum_of_all.loc['test', :] + sum_of_all.loc['validation', :]) * 100
+        sum_of_all.loc['Test relative split', :] = sum_of_all.loc['test', :] / (
+                    sum_of_all.loc['train', :] + sum_of_all.loc['test', :] + sum_of_all.loc['validation', :]) * 100
+        sum_of_all.loc['Train relative split', :] = sum_of_all.loc['train', :] / (
+                    sum_of_all.loc['train', :] + sum_of_all.loc['test', :] + sum_of_all.loc['validation', :]) * 100
+
+    else:
+        sum_of_all.loc['Test relative split', :] = sum_of_all.loc['test', :] / (
+                    sum_of_all.loc['train', :] + sum_of_all.loc['test', :]) * 100
+        sum_of_all.loc['Train relative split', :] = sum_of_all.loc['train', :] / (
+                    sum_of_all.loc['train', :] + sum_of_all.loc['test', :]) * 100
+
+    df = pd.melt(sum_of_all.T.reset_index(), id_vars=['index']).rename(
+        columns={'index': 'EC', 'value': 'Percentage of data'})
+    if y_val is not None:
+        df = df[(df["variable"] != "train") & (df["variable"] != "validation") & (df["variable"] != "test")]
+    else:
+        df = df[(df["variable"] != "train") & (df["variable"] != "test")]
+
+    df1 = sum_of_all.loc['Test relative split', :].describe()
+    df2 = sum_of_all.loc['Train relative split', :].describe()
+    if y_val is not None:
+        df3 = sum_of_all.loc['Validation relative split', :].describe()
+        stats_table = pd.concat([df1, df2, df3], axis=1)
+    else:
+        stats_table = pd.concat([df1, df2], axis=1)
+
+    stats_table.drop(['count'], inplace=True)
+    table_styled = stats_table.style.background_gradient(cmap="YlGn")
+
+    return df, table_styled
+
+
+def save_as_png(df, filename):
+
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.axis('tight')
+    ax.axis('off')
+
+    table = ax.table(
+        cellText=df.values,
+        colLabels=df.columns,
+        loc='center',
+        cellLoc='center')
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.2, 1.5)
+
+    plt.savefig(filename, bbox_inches='tight', dpi=300)
+    plt.close(fig)
