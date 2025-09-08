@@ -90,7 +90,7 @@ def evaluate_model(model_checkpoint_path: str,
                'recall_weighted': float(recall_weighted),
                'f1_macro': float(f1_macro),
                'f1_weighted': float(f1_weighted),
-               'mean_tanimoto': mean_tanimoto}
+               'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
 
     with open(metrics_path, 'w') as f:
         json.dump(results, f, indent=2)
