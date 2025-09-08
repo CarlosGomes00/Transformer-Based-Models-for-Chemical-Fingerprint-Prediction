@@ -14,7 +14,8 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
                       frac_valid: float = 0.1,
                       frac_test: float = 0.1):
 
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     print('\n1. Loading spectra and SMILES from MGF')
     try:
@@ -62,16 +63,12 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
         print(f"Error: {e}")
         return None
 
-    print('\n4. Data spliting')
+    print('\n4. Data Splitting')
     try:
         splits = make_split(dataset, seed, output_dir, frac_train=frac_train, frac_valid=frac_valid, frac_test=frac_test)
-        print(f"Split created with seed={seed}")
-        print(f"Train: {len(splits['train'])} samples ({len(splits['train']) / len(dataset) * 100:.1f}%)")
-        print(f"Validation:   {len(splits['val'])} samples ({len(splits['val']) / len(dataset) * 100:.1f}%)")
-        print(f"Test:  {len(splits['test'])} samples ({len(splits['test']) / len(dataset) * 100:.1f}%)")
 
-        split_pkl = output_dir / 'split_ids.pkl'
-        fingerprints_pkl = output_dir / 'fingerprints.pkl'
+        split_pkl = output_dir / str(seed) / 'split_ids.pkl'
+        fingerprints_pkl = output_dir / str(seed) / 'fingerprints.pkl'
 
         if split_pkl.exists() and fingerprints_pkl.exists():
             print(f'Split IDs and Fingerprints saved')
@@ -86,12 +83,12 @@ def process_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts
 
 
 if __name__ == '__main__':
-    seed = 2
+    seed = 0
     output_dir = REPO_ROOT / "src/data/artifacts"
 
     results = process_and_split(
         mgf_path=mgf_path,
         seed=seed,
         output_dir=output_dir,
-        num_spectra=5000
+        num_spectra=10
     )
