@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import torch
 from rdkit import DataStructs
 from rdkit.DataStructs import ExplicitBitVect
-from src.config import mz_vocabs
 
 
 def path_check(mgf_data: str) -> None:
@@ -27,6 +26,30 @@ def path_check(mgf_data: str) -> None:
         raise FileNotFoundError(f"Error: File could not be found {os.path.abspath(mgf_data)}")
     else:
         print("File found!")
+
+
+def calculate_max_num_peaks(mgf_spectra, percentile=95):
+    """
+    Calculates max_num_peaks based on the percentile of the number of peaks
+    
+    Parameters:
+         mgf_spectra : dict
+            Dict with the mgf spectra
+         percentile : float
+            Percentile for calculation, 95% by default
+
+    Returns:
+        max_num_peaks : int
+            Maximum number of peaks per spectrum
+    """
+    peak_counts = [len(spec.get('m/z array', [])) for spec in mgf_spectra]
+
+    if not peak_counts:
+        raise ValueError("No peaks found")
+
+    max_num_peaks = int(np.percentile(peak_counts, percentile))
+
+    return max_num_peaks
 
 
 def check_mz_precursor(spectrum: dict, mz_vocabs: list[float]) -> Tuple[float | None, bool]:
