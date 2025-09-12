@@ -1,5 +1,5 @@
 from src.data.data_loader import data_loader
-from src.models.transformer_lightning import TransformerLightning
+from src.models.model_lightning import TransformerLightning
 from src.config import mgf_path, vocab_size, morgan_default_dim
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger

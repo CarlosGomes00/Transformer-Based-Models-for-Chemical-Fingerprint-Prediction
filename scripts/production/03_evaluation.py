@@ -1,6 +1,6 @@
 from rdkit import DataStructs
 
-from src.models.transformer_lightning import TransformerLightning
+from src.models.model_lightning import TransformerLightning
 from src.data.data_loader import data_loader
 from src.config import mgf_path
 from utils import tensor_to_bitvect
