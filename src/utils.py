@@ -52,6 +52,29 @@ def calculate_max_num_peaks(mgf_spectra, percentile=95):
     return max_num_peaks
 
 
+def calculate_mz_vocabs(mgf_spectra, mz_step=0.1):
+    """
+    Calculates the m/z vocabulary based on the given spectra and the mz_step
+
+    Parameters:
+        mgf_spectra : dict
+            Dict with the mgf spectra
+        mz_step : float
+            Minimum division of the mz value
+    """
+
+    all_mz = []
+    for spec in mgf_spectra:
+        mz_array = spec.get('m/z array', [])
+        all_mz.extend(mz_array)
+
+    mz_min = np.floor(np.min(all_mz))
+    mz_max = np.ceil(np.max(all_mz))
+    mz_vocabs = np.arange(mz_min, mz_max + mz_step, mz_step)
+
+    return mz_vocabs
+
+
 def check_mz_precursor(spectrum: dict, mz_vocabs: list[float]) -> Tuple[float | None, bool]:
     """
     Extracts and checks whether the PrecursorMZ of a spectrum is within the permitted range
