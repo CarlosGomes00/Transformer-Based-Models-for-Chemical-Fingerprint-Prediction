@@ -2,13 +2,12 @@ import torch
 import pytorch_lightning as pl
 from src.training.training import training_setup, train_step_lightning
 from src.models.model import EncoderTransformer
-from src.config import *
 
 
 class TransformerLightning(pl.LightningModule):
 
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim,
-                 max_seq_len=432):
+                 max_seq_len):
 
         super().__init__()
 
@@ -60,5 +59,3 @@ class TransformerLightning(pl.LightningModule):
                     'scheduler': lr_scheduler,
                     'monitor': 'val_loss',
                     'frequency': 1}}
-
-

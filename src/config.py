@@ -9,13 +9,13 @@ mgf_path = r"/Users/carla/PycharmProjects/Mestrado/Transformer-Based-Models-for-
 # Fixed/default peaks related params
 noise_rmv_threshold = 0.01
 min_num_peaks = 5
-max_num_peaks = 431 # Quantidade definida na reunião
-max_seq_len = 1 + max_num_peaks  # Quantidade de picos (percentil 95%) + o percursor
+max_num_peaks = 431  # Default value, usually overwritten
+max_seq_len = 1 + max_num_peaks  # max_num_peaks + percursor
 mass_error = 0.01
 
 
 # M/z vocabs
-mz_vocabs = np.arange(1.0, 5000.1, 0.1).tolist()
+mz_vocabs = np.arange(1.0, 5000.1, 0.1).tolist() # Default value, usually overwritten
 vocab_size = len(mz_vocabs)  # Variável que serve como token para o padding
 
 

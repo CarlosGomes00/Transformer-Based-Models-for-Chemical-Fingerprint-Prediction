@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from src.config import max_seq_len, vocab_size
-from src.data.fingerprints_tools.fingerprint_generator import smiles_to_fingerprint
+from src.config import max_seq_len as config_max_seq_len
+from src.config import vocab_size as config_vocab_size
 
 
 class SpectraCollateFn:
@@ -13,11 +13,17 @@ class SpectraCollateFn:
     fingerprint targets for supervised training
     """
 
-    def __init__(self, fingerprints_df):
-        self.max_length = max_seq_len
-        self.padding_token_value = vocab_size
-        self.fingerprints_df = fingerprints_df.copy()
+    def __init__(self, fingerprints_df, max_seq_len=None, vocab_size=None):
 
+        if max_seq_len is None or vocab_size is None:
+            self.max_length = max_seq_len if max_seq_len is not None else config_max_seq_len
+            self.padding_token_value = vocab_size if vocab_size is not None else config_vocab_size
+
+        else:
+            self.max_length = max_seq_len
+            self.padding_token_value = vocab_size
+
+        self.fingerprints_df = fingerprints_df.copy()
         self.fingerprints_cache = {}
         self._load_precomputed_fingerprints()
 

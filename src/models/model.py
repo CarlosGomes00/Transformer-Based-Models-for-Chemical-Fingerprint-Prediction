@@ -24,11 +24,11 @@ class EncoderTransformer(nn.Module):
             Dropout probability applied throughout the models
         fingerprint_dim : int, 2048 by default
             Size of output fingerprint
-        max_seq_len : int, 432 by default
+        max_seq_len : int
             Maximum sequence length for positional encoding pre-computation
     """
 
-    def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim=2048, max_seq_len=432):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, max_seq_len, fingerprint_dim=2048):
         super().__init__()
 
         self.peak_embedding = PeakEmbedding(vocab_size, d_model, dropout_rate)
