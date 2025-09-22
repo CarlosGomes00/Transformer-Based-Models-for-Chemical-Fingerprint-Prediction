@@ -7,6 +7,8 @@ import numpy as np
 import json
 from pathlib import Path
 from rdkit import DataStructs
+from src.models.model_lightning import TransformerLightning
+from src.utils import tensor_to_bitvect
 
 
 class Transformer:
@@ -35,14 +37,12 @@ class Transformer:
         self.best_model_path = None
         self.is_fitted = False
 
-# ATENÇÃO: Ver onde colocar o data_loader, é preciso para dar a info ao .fit
-
     def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False):
         """
         Train the transformer model
 
         Parameters:
-            train_loader :
+            train_loader : pytorch DataLoader
                 Train data loader
             val_loader :
                 Validation data loader
@@ -85,12 +85,90 @@ class Transformer:
 
         return self.best_model_path
 
-    def score(self, test_loader, y_true):
+    def eval(self, test_loader, threshold=0.5, save_results=True):
+
+        """
+        Calculates evaluation metrics on the test set
+
+        Parameters:
+            test_loader : pytorch DataLoader
+                Test data loader
+            threshold : float
+                Threshold to binning
+            save_results : bool
+                If true, saves the results
+        """
+
         if not self.is_fitted:
             raise ValueError("Model must be fitted before scoring")
 
-            # Calcula as métricas
-        return
+        model = TransformerLightning.load_from_checkpoint(self.best_model_path)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        model.eval()
+        model.to(device)
+
+        preds, targets = [], []
+
+        with (torch.no_grad()):
+            for (mz_batch,
+                 int_batch,
+                 attention_mask_batch,
+                 batch_spectrum_ids,
+                 precursor_mask_batch,
+                 targets_batch) in test_loader:
+                # Passar os batches para device, seja ele cuda ou cpu
+                mz_batch = mz_batch.to(device)
+                int_batch = int_batch.to(device)
+                attention_mask_batch = attention_mask_batch.to(device)
+                # precursor_mask_batch = precursor_mask_batch.to(device)
+
+                logits = model(mz_batch, int_batch, attention_mask_batch)
+                preds.append(logits.cpu())
+                targets.append(targets_batch)
+
+        pred_float = torch.cat(preds)
+        targets = torch.cat(targets)
+        pred_bins = (pred_float > threshold).int()
+
+        y_true = targets.numpy().ravel()
+        y_pred = pred_bins.numpy().ravel()
+
+        precision_macro = precision_score(y_true, y_pred, average='macro')
+        precision_weighted = precision_score(y_true, y_pred, average='weighted')
+
+        recall_macro = recall_score(y_true, y_pred, average='macro')
+        recall_weighted = recall_score(y_true, y_pred, average='weighted')
+
+        f1_macro = f1_score(y_true, y_pred, average='macro')
+        f1_weighted = f1_score(y_true, y_pred, average='weighted')
+
+        true_bvs = [tensor_to_bitvect(fp) for fp in targets]
+        pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
+
+        tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
+        mean_tanimoto = float(np.mean(tanimoto_values))
+
+        eval_results = {'n_samples': int(targets.shape[0]),
+                        'precision_macro': float(precision_macro),
+                        'precision_weighted': float(precision_weighted),
+                        'recall_macro': float(recall_macro),
+                        'recall_weighted': float(recall_weighted),
+                        'f1_macro': float(f1_macro),
+                        'f1_weighted': float(f1_weighted),
+                        'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
+
+        if save_results:
+            eval_dir = Path('outputs/eval') / str(self.seed)
+            eval_dir.mkdir(parents=True, exist_ok=True)
+
+            metrics_path = eval_dir / "metrics.json"
+            with open(metrics_path, 'w') as f:
+                json.dump(eval_results, f, indent=2)
+
+            print(f'Metrics saved to {metrics_path}')
+
+        return eval_results
 
     def predict(self, test_loader):
         if not self.is_fitted:
@@ -98,6 +176,12 @@ class Transformer:
 
         # Fazer as previsões
 
+        return
+
+    def score(self, y_true):
+        """
+        Analisar as previsões contra os targets reais
+        """
         return
 
     def load_model(self, checkpoint_path):
