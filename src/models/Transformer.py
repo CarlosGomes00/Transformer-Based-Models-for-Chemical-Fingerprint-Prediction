@@ -5,6 +5,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy as np
 import json
+import pandas as pd
 from pathlib import Path
 from rdkit import DataStructs
 from src.models.model_lightning import TransformerLightning
@@ -170,13 +171,74 @@ class Transformer:
 
         return eval_results
 
-    def predict(self, test_loader):
+    def predict(self, data_loader, return_probabilities=False, threshold=0.5, save_results=True):
+
+        """
+        Make predictions on new data
+
+        Important: Model must be fitted to the new data
+
+        Parameters:
+            data_loader
+                Dataloader with new data
+            return_probabilities : bool
+                If true, return raw probabilities
+            threshold : float
+                Threshold to binning
+
+        Returns:
+            predictions : numpy.ndarray
+        """
         if not self.is_fitted:
             raise ValueError("Model must be fitted before predicting")
 
-        # Fazer as previsões
+        model = TransformerLightning.load_from_checkpoint(self.best_model_path)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        return
+        model.eval()
+        model.to(device)
+
+        preds = []
+        n_samples = 0
+
+        print('Making predictions...')
+        print(f'Device: {device}')
+        print(f'Return raw probabilities: {return_probabilities}')
+        if not return_probabilities:
+            print(f'Binary threshold: {threshold}')
+
+        with (torch.no_grad()):
+            for batch_data in data_loader:
+                mz_batch, int_batch, attention_mask_batch = batch_data[:3]
+
+                mz_batch = mz_batch.to(device)
+                int_batch = int_batch.to(device)
+                attention_mask_batch = attention_mask_batch.to(device)
+
+                logits = model(mz_batch, int_batch, attention_mask_batch)
+                probabilities = torch.sigmoid(logits)
+                preds.append(probabilities.cpu())
+                n_samples += probabilities.shape[0]
+
+        pred_probabilities = torch.cat(preds, dim=0)
+
+        print(f'Predictions made for {n_samples} samples')
+
+        if return_probabilities:
+            result = pred_probabilities.numpy()
+            print(f"   Probability range: [{result.min():.4f}, {result.max():.4f}]")
+
+            if save_results:
+                pd.DataFrame(result).to_csv('predictions.csv', index=False)
+            return result
+
+        else:
+            pred_binary = (pred_probabilities > threshold).int()
+            result = pred_binary.numpy()
+
+            if save_results:
+                pd.DataFrame(result).to_csv('predictions_bin.csv', index=False)
+            return result
 
     def score(self, y_true):
         """

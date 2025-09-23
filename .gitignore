@@ -6,6 +6,7 @@ dev_notes
 src/data/artifacts
 notebooks/outputs
 scripts/production/outputs
+notebooks/predictions_bin.csv
 
 
 # Byte-compiled / optimized / DLL files

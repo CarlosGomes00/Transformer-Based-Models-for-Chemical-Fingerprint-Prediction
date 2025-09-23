@@ -101,3 +101,5 @@ def data_loader(seed, batch_size: int = 32, num_workers=4, num_spectra: int = No
     print(f"{split_name} DataLoader ready: {len(dataset)} samples")
 
     return loaders
+
+#TODO Alterar/adicionar método ao dataloader para ser compativel com o método .predict?
