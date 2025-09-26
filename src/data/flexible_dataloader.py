@@ -1,12 +1,5 @@
-"""
-File similar to *main_dataloader* but the preprocessing logic is inside the dataloader_f function.
 
-This file will be used for quick tests, and scenarios where you want to specify a small num_spectra directly
-from the function call
-
-"""
-
-# LEGACY - Use data_loader to load the data
+# LEGACY FILE - Use data_loader to load the data
 
 from torch.utils.data import Dataset, DataLoader
 from src.data.collate_fn import SpectraCollateFn

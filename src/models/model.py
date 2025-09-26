@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-from src.models.embeddings import PeakEmbedding, PrecursorEmbeddingN
-from src.models.positional_encoding import PositionalEncoding
-from src.models.pooling import mean_pooling
-from src.models.fingerprint_head import FingerprintHead
+from models.components.embeddings import PeakEmbedding, PrecursorEmbeddingN
+from models.components.positional_encoding import PositionalEncoding
+from models.components.pooling import mean_pooling
+from models.components.fingerprint_head import FingerprintHead
 
 
 class EncoderTransformer(nn.Module):
