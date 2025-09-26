@@ -144,6 +144,18 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     max_seq_len = max_num_peaks + 1
     vocab_size = len(mz_vocabs)
 
+    pipeline_config = {
+        'max_num_peaks': max_num_peaks,
+        'max_seq_len': max_seq_len,
+        'mz_vocabs': mz_vocabs,
+        'vocab_size': vocab_size
+    }
+
+    config_path = output_dir / str(seed) / 'pipeline_config.json'
+    with open(config_path, 'w') as f:
+        import json
+        json.dump(pipeline_config, f, indent=4)
+
     processed_spectra = mgf_deconvoluter(
         mgf_data=mgf_spectra,
         mz_vocabs=mz_vocabs,
