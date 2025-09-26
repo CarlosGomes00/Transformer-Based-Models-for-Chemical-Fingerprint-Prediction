@@ -216,9 +216,8 @@ class Transformer:
                 attention_mask_batch = attention_mask_batch.to(device)
 
                 logits = model(mz_batch, int_batch, attention_mask_batch)
-                probabilities = torch.sigmoid(logits)
-                preds.append(probabilities.cpu())
-                n_samples += probabilities.shape[0]
+                preds.append(logits.cpu())
+                n_samples += logits.shape[0]
 
         pred_probabilities = torch.cat(preds, dim=0)
 
