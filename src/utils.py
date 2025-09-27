@@ -72,7 +72,7 @@ def calculate_mz_vocabs(mgf_spectra, mz_step=0.1):
     mz_max = np.ceil(np.max(all_mz))
     mz_vocabs = np.arange(mz_min, mz_max + mz_step, mz_step)
 
-    return mz_vocabs
+    return mz_vocabs.tolist()
 
 
 def check_mz_precursor(spectrum: dict, mz_vocabs: list[float]) -> Tuple[float | None, bool]:
