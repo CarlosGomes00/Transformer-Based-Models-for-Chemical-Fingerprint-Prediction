@@ -20,7 +20,7 @@ def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = N
         Dictionary of each spectrum
     """
 
-    spectra = list(mgf.read(mgf_data, use_index=False))
+    spectra = list(mgf.read(str(mgf_data), use_index=False))
 
     if len(spectra) == 0:
         print("Error reading .MGF file")
