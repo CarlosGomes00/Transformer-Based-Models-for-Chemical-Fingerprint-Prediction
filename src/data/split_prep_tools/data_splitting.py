@@ -5,7 +5,7 @@ from deepmol.splitters import MultiTaskStratifiedSplitter
 from pathlib import Path
 from deepmol.compound_featurization import MorganFingerprint
 from deepmol.datasets import SmilesDataset
-from data.mgf_tools.mgf_get import mgf_get_spectra, mgf_get_smiles
+from src.data.mgf_tools.mgf_get import mgf_get_spectra, mgf_get_smiles
 from src.utils import generate_data_stats, calculate_max_num_peaks, mgf_deconvoluter, calculate_mz_vocabs
 from src.config import mgf_path, min_num_peaks, noise_rmv_threshold, mass_error
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -26,8 +26,12 @@ def make_split(dataset, seed, output_dir,
             Seed for reproducibility
         output_dir : Path or str
             Base directory for storing results
-        frac_train/ frac_valid/ frac_test : float
-            Fractions for each split
+        frac_train : float
+            Fraction of data to use for training
+        frac_valid : float
+            Fraction of data to use for validation
+        frac_test : float
+            Fraction of data to use for testing
 
     Returns:
         dict
@@ -122,8 +126,12 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
             Directory for storing results
         num_spectra: int
             Number of spectra, if None reads all the spectra in the file
-        frac_train/ frac_valid/ frac_test : float
-            Fractions for each split
+        frac_train : float
+            Fraction of data to use for training
+        frac_valid : float
+            Fraction of data to use for validation
+        frac_test : float
+            Fraction of data to use for testing
     """
 
     output_dir = Path(output_dir)
