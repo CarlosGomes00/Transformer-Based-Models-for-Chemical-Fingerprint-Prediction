@@ -1,63 +1,70 @@
+import argparse
+import json
+from pathlib import Path
+
+from src.config import mgf_path
+from src.models.Transformer import Transformer
 from src.data.data_loader import data_loader
-from src.models.model_lightning import TransformerLightning
-from src.config import mgf_path, vocab_size, morgan_default_dim
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning import Trainer, seed_everything
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def train_model(seed:int,
-                mgf_path,
-                batch_size=32,
-                nhead=4,
-                num_layers=4,
-                dropout_rate=0.1,
-                fast_dev_run=False,
-                max_epochs=100):
+def main(args):
 
-    seed_everything(seed, workers=True)
+    print(f'Start the training pipeline with seed: {args.seed}')
 
-    loaders = data_loader(batch_size=batch_size, num_workers=4, shuffle=True, mgf_path=mgf_path)
+    artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
 
-    model = TransformerLightning(vocab_size, d_model=128, nhead=nhead, num_layers=num_layers, dropout_rate=dropout_rate,
-                                 fingerprint_dim=morgan_default_dim, max_seq_len=432)
+    with open(artifacts_dir / 'pipeline_config.json', 'r') as f:
+        pipeline_config = json.load(f)
 
-    callbacks = [
-        EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
-        ModelCheckpoint(monitor='val_loss',
-                        mode='min',
-                        save_top_k=3,
-                        dirpath=f'outputs/checkpoints/{seed}',
-                        filename='transformer-{epoch:02d}-{val_loss:.4f}')
-    ]
+    max_num_peaks = pipeline_config['max_num_peaks']
+    max_seq_len = pipeline_config['max_seq_len']
+    mz_vocabs = pipeline_config['mz_vocabs']
+    vocab_size = pipeline_config['vocab_size']
 
-    logger = TensorBoardLogger(save_dir='outputs/logs', name=f'{seed}_train_logs')
+    loaders = data_loader(
+        seed=args.seed,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        num_spectra=args.num_spectra,
+        mgf_path=args.mgf_path,
+        max_num_peaks=max_num_peaks,
+        mz_vocabs=mz_vocabs)
 
-    trainer = Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                      max_epochs=max_epochs, callbacks=callbacks, logger=logger)
+    model = Transformer(seed=args.seed,
+                        max_seq_len=max_seq_len,
+                        vocab_size=vocab_size,
+                        morgan_default_dim=args.morgan_default_dim,
+                        d_model=args.d_model,
+                        n_head=args.n_head,
+                        num_layers=args.num_layers,
+                        dropout_rate=args.dropout_rate)
 
-    trainer.fit(model, train_dataloaders=loaders['train'], val_dataloaders=loaders['val'])
-
-    return trainer.checkpoint_callback.best_model_path
+    model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
+                             fast_dev_run=args.fast_dev_run)
 
 
 if __name__ == '__main__':
-    MGF_PATH = mgf_path
-    SEED = 2
-    BATCH_SIZE = 32
-    NHEAD = 4
-    NUM_LAYERS = 4
-    DROPOUT_RATE = 0.1
+    parser = argparse.ArgumentParser(description="Model training script")
 
-    FAST_DEV_RUN = False
-    MAX_EPOCHS = 50
+    parser.add_argument('--seed', type=int, required=True, help='Seed to save the training outputs')
+    parser.add_argument('--mgf_path', type=str, default=Path(mgf_path), help='Path to the .mgf file')
+    parser.add_argument('--num_spectra', type=int, default=None, help='Number of spectra, all by default')
+    parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
+                        help='Artifacts directory')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+    parser.add_argument('--max_epochs', type=int, default=100, help='Number of epochs')
 
-    best_model = train_model(seed=SEED,
-                             mgf_path=MGF_PATH,
-                             batch_size=BATCH_SIZE,
-                             nhead=NHEAD,
-                             num_layers=NUM_LAYERS,
-                             dropout_rate=DROPOUT_RATE,
-                             fast_dev_run=FAST_DEV_RUN,
-                             max_epochs=MAX_EPOCHS
-                             )
+    parser.add_argument('--fast_dev_run', action='store_true', help='Runs the pipeline with only one '
+                        'training and validation batch ')
+
+    parser.add_argument('--morgan_default_dim', type=int, default=2048, help='Dimension of the fingerprints')
+    parser.add_argument('--d_model', type=int, default=128)
+    parser.add_argument('--n_head', type=int, default=4)
+    parser.add_argument('--num_layers', type=int, default=4)
+    parser.add_argument('--dropout_rate', type=float, default=0.1)
+
+    args = parser.parse_args()
+    main(args)
