@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.optim as optim
-from config import learning_rate, weight_decay
+from src.config import learning_rate, weight_decay
 
 
 def training_setup(model):

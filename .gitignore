@@ -4,6 +4,7 @@ dataset
 .idea/
 dev_notes
 src/data/artifacts
+outputs
 notebooks/outputs
 scripts/production/outputs
 notebooks/predictions_bin.csv
