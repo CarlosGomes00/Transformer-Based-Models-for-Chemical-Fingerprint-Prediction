@@ -1,111 +1,66 @@
-from rdkit import DataStructs
+import argparse
+import json
+from pathlib import Path
 
-from src.models.model_lightning import TransformerLightning
+from src.models.Transformer import Transformer
 from src.data.data_loader import data_loader
 from src.config import mgf_path
-from utils import tensor_to_bitvect
-from pathlib import Path
-import torch
-from sklearn.metrics import precision_score, recall_score, f1_score
-from rdkit.DataStructs import TanimotoSimilarity
-import numpy as np
-import json
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def evaluate_model(model_checkpoint_path: str,
-                   mgf_path: str,
-                   seed: int,
-                   batch_size: int = None,
-                   threshold: float = 0.5,
-                   save_fp: bool = False) -> dict:
+def main(args):
 
-    eval_dir = Path("outputs/eval") / str(seed)
-    eval_dir.mkdir(parents=True, exist_ok=True)
+    print('Starting the model evaluation on the test set...')
 
-    metrics_path = eval_dir / "metrics.json"
-    fp_path = eval_dir / "fingerprints.pt"
+    try:
+        # Também precisa de fazer load dos splits por causa do dataloader (loaders['test']), não?
+        artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
 
-    # Dar load do modelo
-    model = TransformerLightning.load_from_checkpoint(model_checkpoint_path)
+        with open(artifacts_dir / 'pipeline_config.json', 'r') as f:
+            pipeline_config = json.load(f)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.eval()
-    model.to(device)
+        max_num_peaks = pipeline_config['max_num_peaks']
+        mz_vocabs = pipeline_config['mz_vocabs']
 
-    # Dar load dos dados de teste
-    loaders = data_loader(
-        batch_size=batch_size or 32,
-        num_workers=4,
-        shuffle=False,
-        mgf_path=mgf_path)
+        print('Loading the test set...')
+        loaders = data_loader(
+            seed=args.seed,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            num_spectra=args.num_spectra,
+            mgf_path=args.mgf_path,
+            max_num_peaks=max_num_peaks,
+            mz_vocabs=mz_vocabs)
 
-    test_loader = loaders["test"]
+        print(f'Loading model from: {args.checkpoint_path}...')
+        model = Transformer.load_model(checkpoint_path=args.checkpoint_path, seed=args.seed)
 
-    preds, targets = [], []
+        print('Performing the evaluation on the test set!')
+        results = model.eval(test_loader=loaders['test'], threshold=args.threshold, save_results=args.save_results)
+        print(json.dumps(results, indent=4))
 
-    with (torch.no_grad()):
-        for (mz_batch,
-             int_batch,
-             attention_mask_batch,
-             batch_spectrum_ids,
-             precursor_mask_batch,
-             targets_batch) in test_loader:
-
-            # Passar os batches para device, seja ele cuda ou cpu
-            mz_batch = mz_batch.to(device)
-            int_batch = int_batch.to(device)
-            attention_mask_batch = attention_mask_batch.to(device)
-            # precursor_mask_batch = precursor_mask_batch.to(device)
-
-            logits = model(mz_batch, int_batch, attention_mask_batch)
-            preds.append(logits.cpu())
-            targets.append(targets_batch)
-
-    pred_float = torch.cat(preds)
-    targets = torch.cat(targets)
-    pred_bins = (pred_float > threshold).int()
-
-    y_true = targets.numpy().ravel()
-    y_pred = pred_bins.numpy().ravel()
-
-    precision_macro = precision_score(y_true, y_pred, average='macro')
-    precision_weighted = precision_score(y_true, y_pred, average='weighted')
-
-    recall_macro = recall_score(y_true, y_pred, average='macro')
-    recall_weighted = recall_score(y_true, y_pred, average='weighted')
-
-    f1_macro = f1_score(y_true, y_pred, average='macro')
-    f1_weighted = f1_score(y_true, y_pred, average='weighted')
-
-    true_bvs = [tensor_to_bitvect(fp) for fp in targets]
-    pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
-
-    tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
-    mean_tanimoto = float(np.mean(tanimoto_values))
-
-    results = {'n_samples': int(targets.shape[0]),
-               'precision_macro': float(precision_macro),
-               'precision_weighted': float(precision_weighted),
-               'recall_macro': float(recall_macro),
-               'recall_weighted': float(recall_weighted),
-               'f1_macro': float(f1_macro),
-               'f1_weighted': float(f1_weighted),
-               'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
-
-    with open(metrics_path, 'w') as f:
-        json.dump(results, f, indent=2)
-
-    if save_fp:
-        torch.save({"pred_float": pred_float, "pred_bins": pred_bins}, fp_path)
-
-    return results
+    except Exception as e:
+        print(f'Error found: {e}')
+        raise
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Model evaluation script")
 
-    evaluate_model(model_checkpoint_path="outputs/checkpoints/transformer-epoch=07-val_loss=0.2365.ckpt",
-                   mgf_path=mgf_path,
-                   batch_size=None,
-                   threshold=0.5,
-                   save_fp=True,
-                   seed=0)
+    parser.add_argument('--seed', type=int, required=True, help='Seed to save the training outputs '
+                        '(use the same seed of the splits)')
+    parser.add_argument('--mgf_path', type=str, default=Path(mgf_path), help='Path to the .mgf file')
+    parser.add_argument('--num_spectra', type=int, default=None, help='Number of spectra, all by default')
+    parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
+                        help='Artifacts directory')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+
+    parser.add_argument('--checkpoint_path', type=str, required=True, help='Path to the model to be loaded')
+    parser.add_argument('--threshold', type=float, default=0.5, help='Threshold to binning')
+    parser.add_argument('--no_save', dest='save_results', action='store_false',
+                        help='Deactivates the saving of the results')
+
+    args = parser.parse_args()
+    main(args)
