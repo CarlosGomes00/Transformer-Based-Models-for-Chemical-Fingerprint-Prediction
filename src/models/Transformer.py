@@ -11,6 +11,8 @@ from rdkit import DataStructs
 from src.models.model_lightning import TransformerLightning
 from src.utils import tensor_to_bitvect
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 class Transformer:
 
@@ -70,12 +72,15 @@ class Transformer:
             ModelCheckpoint(monitor='val_loss',
                             mode='min',
                             save_top_k=3,
-                            dirpath=f'outputs/checkpoints/{self.seed}',
+                            dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
                             filename='transformer-{epoch:02d}-{val_loss:.4f}')
         ]
 
-        logger = TensorBoardLogger(save_dir='outputs/logs', name=f'{self.seed}_train_logs')
+        logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
+        # deterministic = True quando o modelo estiver pronto para reprodutibilidade
+        # Até lá, manter benchmark = True para ser mais rápido
+        # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
                                   max_epochs=max_epochs, callbacks=callbacks, logger=logger)
 
@@ -97,7 +102,7 @@ class Transformer:
             threshold : float
                 Threshold to binning
             save_results : bool
-                If true, saves the results
+                If true (default), saves the results
         """
 
         if not self.is_fitted:
@@ -160,7 +165,7 @@ class Transformer:
                         'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
 
         if save_results:
-            eval_dir = Path('outputs/eval') / str(self.seed)
+            eval_dir = REPO_ROOT / 'outputs/eval' / str(self.seed)
             eval_dir.mkdir(parents=True, exist_ok=True)
 
             metrics_path = eval_dir / "metrics.json"
@@ -185,6 +190,8 @@ class Transformer:
                 If true, return raw probabilities
             threshold : float
                 Threshold to binning
+            save_results : bool
+                If true (default), prediction results are saved
 
         Returns:
             predictions : numpy.ndarray
@@ -245,20 +252,35 @@ class Transformer:
         """
         return
 
-    def load_model(self, checkpoint_path):
+    @classmethod
+    def load_model(cls, checkpoint_path, seed):
         """
-        Load from a checkpoint
+        Load a model from a checkpoint and return a ready to use Transformer instance
 
         Parameters:
             checkpoint_path : Path
                 Path to the checkpoint
+            seed : int
+                Seed to load the model with
         """
 
         from src.models.model_lightning import TransformerLightning
 
-        self.model = TransformerLightning.load_from_checkpoint(checkpoint_path)
-        self.best_model_path = checkpoint_path
-        self.is_fitted = True
+        pl_model = TransformerLightning.load_from_checkpoint(checkpoint_path)
+        model = cls(
+                seed=seed,
+                max_seq_len=pl_model.hparams.max_seq_len,
+                vocab_size=pl_model.hparams.vocab_size,
+                d_model=pl_model.hparams.d_model,
+                n_head=pl_model.hparams.nhead,
+                num_layers=pl_model.hparams.num_layers,
+                dropout_rate=pl_model.hparams.dropout_rate,
+                morgan_default_dim=pl_model.hparams.fingerprint_dim
+        )
+
+        model.model = pl_model
+        model.best_model_path = checkpoint_path
+        model.is_fitted = True
         print(f'Model loaded from: {checkpoint_path}')
 
-        return
+        return model
