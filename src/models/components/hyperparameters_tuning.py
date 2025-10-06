@@ -2,7 +2,7 @@ import optuna
 from src.models.Transformer import Transformer
 
 
-def objective(trial: optuna.Trial, params: dict, loaders: dict):
+def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
 
     d_model = trial.suggest_categorical('d_model', [128, 256, 512])
     n_head = trial.suggest_int('n_head', 4, 8, log=True)
@@ -10,8 +10,8 @@ def objective(trial: optuna.Trial, params: dict, loaders: dict):
     dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5, log=True)
     #TODO Adicionar o learning rate
 
-    model = Transformer(seed=params['seed'], max_seq_len=params['max_seq_len'], vocab_size=params['vocab_size'],
-                        morgan_default_dim=params['morgan_default_dim'], d_model=d_model, n_head=n_head,
+    model = Transformer(seed=hyper_params['seed'], max_seq_len=hyper_params[], vocab_size=hyper_params['vocab_size'],
+                        morgan_default_dim=hyper_params['morgan_default_dim'], d_model=d_model, n_head=n_head,
                         num_layers=num_layers, dropout_rate=dropout_rate)
 
     model_fitted = model.fit(train_loader=loaders['train'],

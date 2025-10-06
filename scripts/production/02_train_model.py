@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_spectra', type=int, default=None, help='Number of spectra, all by default')
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
     parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
     parser.add_argument('--max_epochs', type=int, default=100, help='Number of epochs')
 
