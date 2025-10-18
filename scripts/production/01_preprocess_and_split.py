@@ -40,7 +40,6 @@ if __name__ == '__main__':
     parser.add_argument('--frac_train', type=float, default=0.8, help='Fraction of training data')
     parser.add_argument('--frac_valid', type=float, default=0.1, help='Fraction of validation data')
     parser.add_argument('--frac_test', type=float, default=0.1, help='Fraction of test data')
-    parser.add_argument('--clean', action='store_false', help='Flag to clean the splits')
 
     args = parser.parse_args()
     main(args)

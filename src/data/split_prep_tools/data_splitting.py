@@ -11,11 +11,10 @@ from src.config import mgf_path, min_num_peaks, noise_rmv_threshold, mass_error
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def make_split(dataset, seed, output_dir, smiles_df: pd.DataFrame,
+def make_split(dataset, seed, output_dir,
                frac_train: float = 0.8,
                frac_valid: float = 0.1,
-               frac_test: float = 0.1,
-               clean: bool = True):
+               frac_test: float = 0.1):
 
     """
     Generates stratified splits
@@ -33,8 +32,7 @@ def make_split(dataset, seed, output_dir, smiles_df: pd.DataFrame,
             Fraction of data to use for validation
         frac_test : float
             Fraction of data to use for testing
-        clean : bool
-        smiles_df : pd.DataFrame
+
 
     Returns:
         dict
@@ -55,60 +53,19 @@ def make_split(dataset, seed, output_dir, smiles_df: pd.DataFrame,
         seed=seed
     )
 
-    raw_splits = {"train": train_dataset.ids, "val": val_dataset.ids, "test": test_dataset.ids}
-
-    if clean:
-        print("Cleaning splits")
-        final_splits, cleaning_stats = clean_splits(raw_splits, smiles_df)
-        stats_path = seed_dir / 'cleaning_stats.json'
-        with open(stats_path, 'w') as f:
-            import json
-            json.dump(cleaning_stats, f, indent=4)
-        print(f"Cleaning stats saved in: {stats_path}")
-    else:
-        final_splits = raw_splits
-
-    id_to_idx = {id_val: i for i, id_val in enumerate(dataset.ids)}
-
-    train_indices = [id_to_idx[id_val] for id_val in final_splits['train']]
-    val_indices = [id_to_idx[id_val] for id_val in final_splits['val']]
-    test_indices = [id_to_idx[id_val] for id_val in final_splits['test']]
-
-    final_train_dataset = SmilesDataset(
-        smiles=[dataset.smiles[i] for i in train_indices],
-        ids=[dataset.ids[i] for i in train_indices],
-        X=dataset.X[train_indices],
-        y=dataset.y[train_indices]
-    )
-
-    final_val_dataset = SmilesDataset(
-        smiles=[dataset.smiles[i] for i in val_indices],
-        ids=[dataset.ids[i] for i in val_indices],
-        X=dataset.X[val_indices],
-        y=dataset.y[val_indices]
-    )
-
-    final_test_dataset = SmilesDataset(
-        smiles=[dataset.smiles[i] for i in test_indices],
-        ids=[dataset.ids[i] for i in test_indices],
-        X=dataset.X[test_indices],
-        y=dataset.y[test_indices]
-    )
-
-    total_samples = len(final_train_dataset) + len(final_val_dataset) + len(final_test_dataset)
+    splits = {"train": train_dataset.ids, "val": val_dataset.ids, "test": test_dataset.ids}
 
     print("Saving splits")
     print(f"Split created with seed = {seed}")
-    print(f"Train: {len(final_train_dataset)} samples ({len(final_train_dataset) / total_samples * 100:.1f}%)")
-    print(f"Validation:   {len(final_val_dataset)} samples ({len(final_val_dataset) / total_samples * 100:.1f}%)")
-    print(f"Test:  {len(final_test_dataset)} samples ({len(final_test_dataset) / total_samples * 100:.1f}%)")
+    print(f"Train: {len(train_dataset)} samples ({len(train_dataset) / len(dataset) * 100:.1f}%)")
+    print(f"Validation:   {len(val_dataset)} samples ({len(val_dataset) / len(dataset) * 100:.1f}%)")
+    print(f"Test:  {len(test_dataset)} samples ({len(test_dataset) / len(dataset) * 100:.1f}%)")
 
     split_pkl = seed_dir / 'split_ids.pkl'
     with split_pkl.open('wb') as f:
-        pickle.dump(final_splits, f)
+        pickle.dump(splits, f)
 
     print(f"Saving fingerprints cache")
-    """
     all_fingerprints = []
     all_ids = []
 
@@ -132,17 +89,11 @@ def make_split(dataset, seed, output_dir, smiles_df: pd.DataFrame,
     train_labels = train_dataset.y
     val_labels = val_dataset.y
     test_labels = test_dataset.y
-    """
 
-    fp_df = pd.DataFrame(np.vstack([final_train_dataset.X, final_val_dataset.X, final_test_dataset.X]))
-    fp_df.columns = [f'fp_{i}' for i in range(fp_df.shape[1])]
-    fp_df['spectrum_id'] = np.concatenate([final_train_dataset.ids, final_val_dataset.ids, final_test_dataset.ids])
-    fp_cache_path = seed_dir / 'fingerprints.pkl'
-    fp_df.to_pickle(fp_cache_path)
-
-    stats_df, table_styled = generate_data_stats(final_train_dataset.y, final_test_dataset.y, final_val_dataset.y)
+    stats_df, table_styled = generate_data_stats(train_labels, test_labels, val_labels)
     stats_csv_path = seed_dir / 'split_statistics.csv'
     stats_html_path = seed_dir / 'split_statistics.html'
+
     with open(stats_html_path, 'w') as f:
         f.write(table_styled.to_html())
 
@@ -155,15 +106,12 @@ def make_split(dataset, seed, output_dir, smiles_df: pd.DataFrame,
     print(f"  • {stats_csv_path}")
     print(f"  • {stats_html_path}")
 
-    return final_splits
+    return splits
 
 
+# LEGACY - This function was designed to perform cleaning in the val and test set, but it was discontinued
+# due to its limitations.
 def clean_splits(splits: dict, smiles_df: pd.DataFrame):
-
-    """
-    Performs a two-step cleaning process on data splits:
-    -
-    """
 
     train_smiles = set(smiles_df[smiles_df['spectrum_id'].isin(splits['train'])]['smiles'])
 
@@ -200,8 +148,7 @@ def clean_splits(splits: dict, smiles_df: pd.DataFrame):
 def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None,
                          frac_train: float = 0.8,
                          frac_valid: float = 0.1,
-                         frac_test: float = 0.1,
-                         clean: bool = True):
+                         frac_test: float = 0.1):
 
     """
     Function that splits the data and calculates some of the essential parameters
@@ -276,10 +223,14 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     dataset = MorganFingerprint().featurize(dataset)
     dataset._y = dataset.X
 
+    initial_count = len(dataset)
+    dataset.remove_duplicates(inplace=True)
+    count_after_cleaning = len(dataset)
+    print(f"Dataset reduced from {initial_count} to {count_after_cleaning} unique samples.")
+
     print('\n4. Data Splitting')
 
-    splits = make_split(dataset, seed, output_dir, frac_train=frac_train, frac_valid=frac_valid, frac_test=frac_test,
-                        clean=clean, smiles_df=smiles_df)
+    splits = make_split(dataset, seed, output_dir, frac_train=frac_train, frac_valid=frac_valid, frac_test=frac_test)
 
     split_pkl = output_dir / str(seed) / 'split_ids.pkl'
     fingerprints_pkl = output_dir / str(seed) / 'fingerprints.pkl'
