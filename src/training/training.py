@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from src.config import learning_rate, weight_decay
@@ -18,6 +19,33 @@ def training_setup(model):
     """
 
     criterion = nn.BCELoss()
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay
+    )
+    return criterion, optimizer
+
+
+def training_setup_weighted(model, pos_weight_value=1):
+
+    """
+    Configures loss function and optimizer for transformer training.
+
+    Parameters:
+        model : EncoderTransformer
+            The transformer models to be trained
+        pos_weight_value : float
+            The weight to be applied to the positive class in the loss function
+
+    Returns:
+        tuple[nn.BCEWithLogitsLoss, optim.Adam]
+            Loss function and optimizer ready for training loop
+    """
+
+    pos_weight = torch.tensor([pos_weight_value] * model.fingerprint_dim)
+
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = optim.Adam(
         model.parameters(),
         lr=learning_rate,
@@ -78,7 +106,7 @@ def train_step_lightning(model, batch, criterion):
 
     mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch = batch
 
-    outputs = model(mz_batch, int_batch, attention_mask_batch) #Adicionar a precursor_mask ao foward
+    outputs = model(mz_batch, int_batch, attention_mask_batch)  #Adicionar a precursor_mask ao foward
     loss = criterion(outputs, targets_batch)
 
     return loss
