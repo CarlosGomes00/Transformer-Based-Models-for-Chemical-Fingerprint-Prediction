@@ -67,8 +67,6 @@ def data_loader(seed, batch_size: int = 32, num_workers=4, num_spectra: int = No
             if spectrum_id in split_ids_set:
                 filtered_spectra.append(spectrum)
 
-        print(f"Filtered to {len(filtered_spectra)} spectra for {split_name}")
-
         split_fingerprints = all_fingerprints[
             all_fingerprints['spectrum_id'].isin(split_ids_set)].copy()
 
@@ -96,8 +94,6 @@ def data_loader(seed, batch_size: int = 32, num_workers=4, num_spectra: int = No
             num_workers=num_workers,
             persistent_workers=True
         )
-
-    print(f"{split_name} DataLoader ready: {len(dataset)} samples")
 
     return loaders
 
