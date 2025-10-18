@@ -30,7 +30,7 @@ def main(args):
 
     func = lambda trial: objective(trial, hyper_params, loaders)
     study = optuna.create_study(direction='minimize')
-    study.optimize(func, n_trials=args.trials)
+    study.optimize(func, n_trials=args.n_trials)
 
     print(f'Best trial: {study.best_value}')
     print(f'Best params: {study.best_params}')
