@@ -31,7 +31,7 @@ class TransformerLightning(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = train_step_lightning(self.model, batch, self.criterion)
 
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('train_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

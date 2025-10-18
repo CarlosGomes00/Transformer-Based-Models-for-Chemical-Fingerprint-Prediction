@@ -14,7 +14,6 @@ def main(args):
     print('Starting the model evaluation on the test set...')
 
     try:
-        # Também precisa de fazer load dos splits por causa do dataloader (loaders['test']), não?
         artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
 
         with open(artifacts_dir / 'pipeline_config.json', 'r') as f:
