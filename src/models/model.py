@@ -31,6 +31,14 @@ class EncoderTransformer(nn.Module):
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, max_seq_len, fingerprint_dim=2048):
         super().__init__()
 
+        self.vocab_size = vocab_size
+        self.d_model = d_model
+        self.nhead = nhead
+        self.num_layers = num_layers
+        self.dropout_rate = dropout_rate
+        self.max_seq_len = max_seq_len
+        self.fingerprint_dim = fingerprint_dim
+
         self.peak_embedding = PeakEmbedding(vocab_size, d_model, dropout_rate)
         self.precursor_embedding = PrecursorEmbeddingN(vocab_size, d_model, dropout_rate)
         self.positional_encoding = PositionalEncoding(d_model, max_seq_len, dropout_rate)
