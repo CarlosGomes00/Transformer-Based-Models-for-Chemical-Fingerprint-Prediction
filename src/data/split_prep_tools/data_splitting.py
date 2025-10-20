@@ -21,7 +21,7 @@ def make_split(dataset, seed, output_dir,
 
     Parameters:
         dataset
-            Dataset to be split
+            Data to be splited
         seed : int
             Seed for reproducibility
         output_dir : Path or str

@@ -25,6 +25,8 @@ def training_setup(model):
         weight_decay=weight_decay
     )
     return criterion, optimizer
+#TODO Retirar lr e weight_decay como param fixo: remover import e passar como param na função training_setup (ver se é
+# como fiz no debaixo)
 
 
 def training_setup_weighted(model, pos_weight_value=1):
@@ -37,6 +39,10 @@ def training_setup_weighted(model, pos_weight_value=1):
             The transformer models to be trained
         pos_weight_value : float
             The weight to be applied to the positive class in the loss function
+        learning_rate : float
+            The learning rate of the optimizer
+        weight_decay : float
+            The weight decay of the optimizer
 
     Returns:
         tuple[nn.BCEWithLogitsLoss, optim.Adam]
@@ -64,7 +70,7 @@ def train_step(model, batch, criterion, optimizer):
             The transformer models being trained. Must be in training mode
         batch : tuple
             Batch data from the DataLoader
-        criterion : nn.BCELoss
+        criterion : nn.BCELoss; nn.BCEWithLogitsLoss
             Loss function for binary classification
         optimizer : optim.Adam
             Optimizer for parameter updates
@@ -96,7 +102,7 @@ def train_step_lightning(model, batch, criterion):
             The transformer models being trained
         batch : tuple
             Batch data from the DataLoader
-        criterion : nn.BCELoss
+        criterion : nn.BCELoss; nn.BCEWithLogitsLoss
             Loss function for binary classification
 
     Returns:

@@ -7,7 +7,7 @@ from src.models.model import EncoderTransformer
 class TransformerLightning(pl.LightningModule):
 
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim,
-                 max_seq_len):
+                 max_seq_len): #adicionar learning_rate e weight_decay aqui?
 
         super().__init__()
 
@@ -21,9 +21,9 @@ class TransformerLightning(pl.LightningModule):
                                         fingerprint_dim=fingerprint_dim,
                                         max_seq_len=max_seq_len)
 
-        self.criterion, _ = training_setup(self.model)
-        # self.criterion, _ = training_setup_weighted(self.model) Teste para diferentes loss functions
-        # (quando ativar esta, remover a sigmoid na ultima layer)
+        #self.criterion, _ = training_setup(self.model)
+        self.criterion, _ = training_setup_weighted(self.model)
+        # Teste para diferentes loss functions (quando ativar esta, remover a sigmoid na ultima layer)
 
     def forward(self, mz_batch, int_batch, attention_mask):
         return self.model(mz_batch, int_batch, attention_mask)

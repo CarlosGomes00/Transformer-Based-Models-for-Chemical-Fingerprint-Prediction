@@ -13,36 +13,41 @@ def main(args):
 
     print(f'Start the training pipeline with seed: {args.seed}')
 
-    artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
+    try:
+        artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
 
-    with open(artifacts_dir / 'pipeline_config.json', 'r') as f:
-        pipeline_config = json.load(f)
+        with open(artifacts_dir / 'pipeline_config.json', 'r') as f:
+            pipeline_config = json.load(f)
 
-    max_num_peaks = pipeline_config['max_num_peaks']
-    max_seq_len = pipeline_config['max_seq_len']
-    mz_vocabs = pipeline_config['mz_vocabs']
-    vocab_size = pipeline_config['vocab_size']
+        max_num_peaks = pipeline_config['max_num_peaks']
+        max_seq_len = pipeline_config['max_seq_len']
+        mz_vocabs = pipeline_config['mz_vocabs']
+        vocab_size = pipeline_config['vocab_size']
 
-    loaders = data_loader(
-        seed=args.seed,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        num_spectra=args.num_spectra,
-        mgf_path=args.mgf_path,
-        max_num_peaks=max_num_peaks,
-        mz_vocabs=mz_vocabs)
+        loaders = data_loader(
+            seed=args.seed,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            num_spectra=args.num_spectra,
+            mgf_path=args.mgf_path,
+            max_num_peaks=max_num_peaks,
+            mz_vocabs=mz_vocabs)
 
-    model = Transformer(seed=args.seed,
-                        max_seq_len=max_seq_len,
-                        vocab_size=vocab_size,
-                        morgan_default_dim=args.morgan_default_dim,
-                        d_model=args.d_model,
-                        n_head=args.n_head,
-                        num_layers=args.num_layers,
-                        dropout_rate=args.dropout_rate)
+        model = Transformer(seed=args.seed,
+                            max_seq_len=max_seq_len,
+                            vocab_size=vocab_size,
+                            morgan_default_dim=args.morgan_default_dim,
+                            d_model=args.d_model,
+                            n_head=args.n_head,
+                            num_layers=args.num_layers,
+                            dropout_rate=args.dropout_rate)
 
-    model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
-                             fast_dev_run=args.fast_dev_run)
+        model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
+                                 fast_dev_run=args.fast_dev_run)
+
+    except Exception as e:
+        print(f'Error found: {e}')
+        raise
 
 
 if __name__ == '__main__':

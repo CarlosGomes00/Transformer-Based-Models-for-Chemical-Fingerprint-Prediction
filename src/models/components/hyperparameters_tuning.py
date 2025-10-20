@@ -8,6 +8,8 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
     n_head = trial.suggest_int('n_head', 4, 8, log=True)
     num_layers = trial.suggest_int('num_layers', 2, 8, step=1, log=True)
     dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5, log=True)
+    #learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-1, log=True)
+    #weight_decay = trial.suggest_float(
     #TODO Adicionar o learning rate
 
     model = Transformer(seed=hyper_params['seed'], max_seq_len=hyper_params['max_seq_len'], vocab_size=hyper_params['vocab_size'],

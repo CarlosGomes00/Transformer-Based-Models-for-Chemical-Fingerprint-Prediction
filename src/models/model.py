@@ -3,7 +3,7 @@ import torch.nn as nn
 from src.models.components.embeddings import PeakEmbedding, PrecursorEmbeddingN
 from src.models.components.positional_encoding import PositionalEncoding
 from src.models.components.pooling import mean_pooling
-from src.models.components.fingerprint_head import FingerprintHead
+from src.models.components.fingerprint_head import FingerprintHead, FingerprintHeadLogits
 
 
 class EncoderTransformer(nn.Module):
@@ -39,7 +39,7 @@ class EncoderTransformer(nn.Module):
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         self.pooling = mean_pooling
-        self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
+        self.fingerprint_head = FingerprintHeadLogits(d_model, fingerprint_dim)
 
     def forward(self, mz_batch, int_batch, attention_mask):
 
