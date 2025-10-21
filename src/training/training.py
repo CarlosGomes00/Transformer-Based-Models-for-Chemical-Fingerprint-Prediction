@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchvision.ops import sigmoid_focal_loss
 from src.config import learning_rate, weight_decay
 
 
@@ -29,7 +30,7 @@ def training_setup(model):
 # como fiz no debaixo)
 
 
-def training_setup_weighted(model, pos_weight_value=1):
+def training_setup_weighted(model, pos_weight=1):
 
     """
     Configures loss function and optimizer for transformer training.
@@ -37,7 +38,7 @@ def training_setup_weighted(model, pos_weight_value=1):
     Parameters:
         model : EncoderTransformer
             The transformer models to be trained
-        pos_weight_value : float
+        pos_weight : float
             The weight to be applied to the positive class in the loss function
         learning_rate : float
             The learning rate of the optimizer
@@ -49,7 +50,7 @@ def training_setup_weighted(model, pos_weight_value=1):
             Loss function and optimizer ready for training loop
     """
 
-    pos_weight = torch.tensor([pos_weight_value] * model.fingerprint_dim)
+    pos_weight = torch.tensor([pos_weight] * model.fingerprint_dim)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = optim.Adam(
@@ -57,6 +58,19 @@ def training_setup_weighted(model, pos_weight_value=1):
         lr=learning_rate,
         weight_decay=weight_decay
     )
+    return criterion, optimizer
+
+
+def training_setup_focal(model, alpha=0.25, gamma=2):
+
+    criterion = sigmoid_focal_loss(alpha=alpha, gamma=gamma)
+
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay
+    )
+
     return criterion, optimizer
 
 

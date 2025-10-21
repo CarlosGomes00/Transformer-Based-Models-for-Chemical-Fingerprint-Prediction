@@ -42,4 +42,4 @@ class FingerprintHeadLogits(nn.Module):
         self.fc = nn.Linear(d_model, fingerprint_dim)
 
     def forward(self, x):
-        return self.fc(self.fc(x))
+        return self.fc(x)

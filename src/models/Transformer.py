@@ -24,7 +24,11 @@ class Transformer:
                  d_model,
                  n_head,
                  num_layers,
-                 dropout_rate):
+                 dropout_rate,
+                 loss_func,
+                 pos_weight,
+                 focal_gama,
+                 focal_alpha):
 
         self.seed = seed
         self.max_seq_len = max_seq_len
@@ -34,6 +38,10 @@ class Transformer:
         self.n_head = n_head
         self.num_layers = num_layers
         self.dropout_rate = dropout_rate
+        self.loss_func = loss_func
+        self.pos_weight = pos_weight
+        self.focal_gama = focal_gama
+        self.focal_alpha = focal_alpha
 
         self.model = None
         self.trainer = None
@@ -65,7 +73,11 @@ class Transformer:
                                           nhead=self.n_head,
                                           num_layers=self.num_layers,
                                           dropout_rate=self.dropout_rate,
-                                          fingerprint_dim=self.morgan_default_dim)
+                                          fingerprint_dim=self.morgan_default_dim,
+                                          loss_func=self.loss_func,
+                                          pos_weight=self.pos_weight,
+                                          focal_gama=self.focal_gama,
+                                          focal_alpha=self.focal_alpha)
 
         callbacks = [
             EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
@@ -275,7 +287,11 @@ class Transformer:
                 n_head=pl_model.hparams.nhead,
                 num_layers=pl_model.hparams.num_layers,
                 dropout_rate=pl_model.hparams.dropout_rate,
-                morgan_default_dim=pl_model.hparams.fingerprint_dim
+                morgan_default_dim=pl_model.hparams.fingerprint_dim,
+                loss_func=pl_model.hparams.loss_func,
+                pos_weight=pl_model.hparams.pos_weight,
+                focal_gama=pl_model.hparams.focal_gama,
+                focal_alpha=pl_model.hparams.focal_alpha
         )
 
         model.model = pl_model

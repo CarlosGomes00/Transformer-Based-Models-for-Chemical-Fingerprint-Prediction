@@ -10,6 +10,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
     dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5, log=True)
     #learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-1, log=True)
     #weight_decay = trial.suggest_float(
+    #pos_weight Adicionar também
     #TODO Adicionar o learning rate
 
     model = Transformer(seed=hyper_params['seed'], max_seq_len=hyper_params['max_seq_len'], vocab_size=hyper_params['vocab_size'],
