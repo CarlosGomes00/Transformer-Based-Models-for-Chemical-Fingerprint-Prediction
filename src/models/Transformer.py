@@ -27,7 +27,7 @@ class Transformer:
                  dropout_rate,
                  loss_func,
                  pos_weight,
-                 focal_gama,
+                 focal_gamma,
                  focal_alpha):
 
         self.seed = seed
@@ -40,7 +40,7 @@ class Transformer:
         self.dropout_rate = dropout_rate
         self.loss_func = loss_func
         self.pos_weight = pos_weight
-        self.focal_gama = focal_gama
+        self.focal_gamma = focal_gamma
         self.focal_alpha = focal_alpha
 
         self.model = None
@@ -76,7 +76,7 @@ class Transformer:
                                           fingerprint_dim=self.morgan_default_dim,
                                           loss_func=self.loss_func,
                                           pos_weight=self.pos_weight,
-                                          focal_gama=self.focal_gama,
+                                          focal_gamma=self.focal_gamma,
                                           focal_alpha=self.focal_alpha)
 
         callbacks = [
@@ -147,7 +147,15 @@ class Transformer:
 
         pred_float = torch.cat(preds)
         targets = torch.cat(targets)
-        pred_bins = (pred_float > threshold).int()
+        loss_func = model.hparams.loss_func
+
+        if loss_func in ('bce_logits', 'focal'):
+            pred_probs = torch.sigmoid(pred_float)
+            pred_bins = (pred_probs > threshold).int()
+        elif loss_func == 'bce':
+            pred_bins = (pred_float > threshold).int()
+        else:
+            raise ValueError(f'Binarisation logic not defined for the loss function: {loss_func}')
 
         y_true = targets.numpy().ravel()
         y_pred = pred_bins.numpy().ravel()
@@ -290,7 +298,7 @@ class Transformer:
                 morgan_default_dim=pl_model.hparams.fingerprint_dim,
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,
-                focal_gama=pl_model.hparams.focal_gama,
+                focal_gamma=pl_model.hparams.focal_gamma,
                 focal_alpha=pl_model.hparams.focal_alpha
         )
 

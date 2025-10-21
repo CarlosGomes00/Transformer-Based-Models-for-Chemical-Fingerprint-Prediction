@@ -10,7 +10,7 @@ class TransformerLightning(pl.LightningModule):
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim, max_seq_len,
                  loss_func: str = 'bce_logits',
                  pos_weight: float = 1,
-                 focal_gama: float = 2,
+                 focal_gamma: float = 2,
                  focal_alpha: float = 0.25):  #adicionar learning_rate e weight_decay aqui?
 
         super().__init__()

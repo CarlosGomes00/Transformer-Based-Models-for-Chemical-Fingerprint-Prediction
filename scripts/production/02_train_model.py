@@ -43,7 +43,7 @@ def main(args):
                             dropout_rate=args.dropout_rate,
                             loss_func=args.loss,
                             pos_weight=args.pos_weight,
-                            focal_gama=args.focal_gama,
+                            focal_gamma=args.focal_gamma,
                             focal_alpha=args.focal_alpha)
 
         model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--loss', type=str, default='bce_logits', help='Loss to be used (bce, bce_logits, focal')
     parser.add_argument('--pos_weight', type=float, default=1, help='Only used if loss=bce_logits - '
                         'Weight for the positive class')
-    parser.add_argument('--focal_gama', type=float, default=2, help='Only used if loss=focal - '
+    parser.add_argument('--focal_gamma', type=float, default=2, help='Only used if loss=focal - '
                         'Exponent of the modulating factor (1 - p_t) to balance easy vs hard examples')
     parser.add_argument('--focal_alpha', type=float, default=0.25, help='Only used if loss=focal - '
                         'Weighting factor in range [0, 1] to balance positive vs negative examples or -1 for ignore')
