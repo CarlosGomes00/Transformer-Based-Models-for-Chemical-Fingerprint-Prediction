@@ -33,7 +33,13 @@ def main(args):
     study.optimize(func, n_trials=args.n_trials)
 
     print(f'Best trial: {study.best_value}')
-    print(f'Best params: {study.best_params}')
+    print(f'Best hyperparams: {study.best_params}')
+
+    best_hyperparams_path = artifacts_dir / 'best_hyperparams.json'
+    with open(best_hyperparams_path, 'w') as f:
+        json.dump(study.best_params, f, indent=4)
+
+    print('Best hyperparams')
 
 
 if __name__ == '__main__':
