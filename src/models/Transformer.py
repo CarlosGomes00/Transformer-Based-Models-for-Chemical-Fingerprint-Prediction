@@ -28,7 +28,9 @@ class Transformer:
                  loss_func,
                  pos_weight,
                  focal_gamma,
-                 focal_alpha):
+                 focal_alpha,
+                 weight_decay,
+                 learning_rate):
 
         self.seed = seed
         self.max_seq_len = max_seq_len
@@ -42,6 +44,8 @@ class Transformer:
         self.pos_weight = pos_weight
         self.focal_gamma = focal_gamma
         self.focal_alpha = focal_alpha
+        self.weight_decay = weight_decay
+        self.learning_rate = learning_rate
 
         self.model = None
         self.trainer = None
@@ -77,7 +81,9 @@ class Transformer:
                                           loss_func=self.loss_func,
                                           pos_weight=self.pos_weight,
                                           focal_gamma=self.focal_gamma,
-                                          focal_alpha=self.focal_alpha)
+                                          focal_alpha=self.focal_alpha,
+                                          weight_decay=self.weight_decay,
+                                          learning_rate=self.learning_rate)
 
         callbacks = [
             EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
@@ -299,8 +305,9 @@ class Transformer:
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,
                 focal_gamma=pl_model.hparams.focal_gamma,
-                focal_alpha=pl_model.hparams.focal_alpha
-        )
+                focal_alpha=pl_model.hparams.focal_alpha,
+                weight_decay=pl_model.hparams.weight_decay,
+                learning_rate=pl_model.hparams.learning_rate)
 
         model.model = pl_model
         model.best_model_path = checkpoint_path

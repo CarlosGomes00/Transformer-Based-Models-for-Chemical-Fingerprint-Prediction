@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.ops import sigmoid_focal_loss
-from src.config import learning_rate, weight_decay
 
 
-def training_setup(model):
+def training_setup(model, learning_rate: float = 0.001, weight_decay: float = 1e-4):
 
     """
     Configures loss function and optimizer for transformer training.
@@ -13,6 +12,10 @@ def training_setup(model):
     Parameters:
         model : EncoderTransformer
             The transformer models to be trained
+        learning_rate : float
+            The learning rate of the optimizer
+        weight_decay : float
+            The weight decay of the optimizer
 
     Returns:
         tuple[nn.BCELoss, optim.Adam]
@@ -26,11 +29,9 @@ def training_setup(model):
         weight_decay=weight_decay
     )
     return criterion, optimizer
-#TODO Retirar lr e weight_decay como param fixo: remover import e passar como param na função training_setup (ver se é
-# como fiz no debaixo)
 
 
-def training_setup_weighted(model, pos_weight=1):
+def training_setup_weighted(model, pos_weight=1, learning_rate: float = 0.001, weight_decay: float = 1e-4):
 
     """
     Configures loss function and optimizer for transformer training.
@@ -61,7 +62,7 @@ def training_setup_weighted(model, pos_weight=1):
     return criterion, optimizer
 
 
-def training_setup_focal(model, alpha=0.25, gamma=2):
+def training_setup_focal(model, alpha=0.25, gamma=2, learning_rate: float = 0.001, weight_decay: float = 1e-4):
 
     criterion = sigmoid_focal_loss(alpha=alpha, gamma=gamma)
 

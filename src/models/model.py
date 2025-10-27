@@ -9,8 +9,6 @@ from src.models.components.fingerprint_head import FingerprintHead, FingerprintH
 class EncoderTransformer(nn.Module):
 
     """
-    Transformer encoder models for predicting chemical fingerprints from mass spectra
-
     Parameters:
         vocab_size : int
             Size of the m/z vocabulary for token embeddings
@@ -58,7 +56,7 @@ class EncoderTransformer(nn.Module):
     def forward(self, mz_batch, int_batch, attention_mask):
 
         """
-        Forward pass through the transformer models
+        Forward pass through the transformer model
 
         Parameters:
             mz_batch : torch.Tensor
