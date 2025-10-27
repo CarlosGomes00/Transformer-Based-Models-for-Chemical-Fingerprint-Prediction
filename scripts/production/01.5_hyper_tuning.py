@@ -29,7 +29,7 @@ def main(args):
                           mz_vocabs=pipeline_config['mz_vocabs'])
 
     func = lambda trial: objective(trial, hyper_params, loaders)
-    study = optuna.create_study(direction='minimize')
+    study = optuna.create_study(direction='maximize')
     study.optimize(func, n_trials=args.n_trials)
 
     print(f'Best trial: {study.best_value}')

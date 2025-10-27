@@ -1,5 +1,7 @@
 import torch
 import pytorch_lightning as pl
+from torchmetrics import F1Score
+
 from src.training.training import training_setup, training_setup_weighted, train_step_lightning
 from torchvision.ops import sigmoid_focal_loss
 from src.models.model import EncoderTransformer
@@ -8,10 +10,12 @@ from src.models.model import EncoderTransformer
 class TransformerLightning(pl.LightningModule):
 
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim, max_seq_len,
+                 pos_weight,
+                 learning_rate,
+                 weight_decay,
                  loss_func: str = 'bce_logits',
-                 pos_weight: float = 1,
                  focal_gamma: float = 2,
-                 focal_alpha: float = 0.25):  #adicionar learning_rate e weight_decay aqui?
+                 focal_alpha: float = 0.25):
 
         super().__init__()
 
@@ -28,9 +32,14 @@ class TransformerLightning(pl.LightningModule):
 
         self.criterion = None
         if loss_func == 'bce':
-            self.criterion, _ = training_setup(self.model) # Versão para BCE
+            self.criterion, _ = training_setup(self.model, learning_rate=self.hparams.learning_rate,
+                                               weight_decay=self.hparams.weight_decay) # Versão para BCE
         elif loss_func == 'bce_logits':
-            self.criterion, _ = training_setup_weighted(self.model, self.hparams.pos_weight)  # Versão para BCEWithLogits
+            self.criterion, _ = training_setup_weighted(self.model, self.hparams.pos_weight,
+                                                        learning_rate=self.hparams.learning_rate,
+                                                        weight_decay=self.hparams.weight_decay)  # Versão para BCEWithLogits
+
+        self.f1_score = F1Score(average='macro', task='multilabel', num_labels=self.hparams.fingerprint_dim)
 
     # Teste para diferentes loss functions (para focal e BCEWL, utilizar a ultima layer sem sigmoid)
     def forward(self, mz_batch, int_batch, attention_mask):
@@ -67,12 +76,22 @@ class TransformerLightning(pl.LightningModule):
         else:
             loss = self.criterion(outputs, targets_batch)
 
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+        pred_probs = torch.sigmoid(outputs)
+        pred_bins = (pred_probs > 0.5).int()
+
+        f1_score = self.val_f1(pred_bins, targets_batch)
+
+        metrics = {'val_loss': loss,
+                   'val_f1_macro': f1_score}
+
+        self.log_dict(metrics, on_epoch=True, prog_bar=True)
+
         return loss
 
     def configure_optimizers(self):
 
-        _, optimizer = training_setup(self.model)
+        _, optimizer = training_setup(self.model, learning_rate=self.hparams.learning_rate,
+                                      weight_decay=self.hparams.weight_decay)
 
         lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
