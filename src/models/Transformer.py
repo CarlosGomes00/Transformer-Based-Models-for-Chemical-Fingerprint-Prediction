@@ -52,7 +52,7 @@ class Transformer:
         self.best_model_path = None
         self.is_fitted = False
 
-    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False):
+    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None):
         """
         Train the transformer model
 
@@ -65,6 +65,8 @@ class Transformer:
                 Maximum number of epochs to train the model
             fast_dev_run : bool
                 If True, runs 1 batch to ensure code will execute without errors (Debugging purposes)
+            callbacks : list
+                A list of extra callbacks to add to the trainer
         """
 
         from src.models.model_lightning import TransformerLightning
@@ -84,15 +86,28 @@ class Transformer:
                                           focal_alpha=self.focal_alpha,
                                           weight_decay=self.weight_decay,
                                           learning_rate=self.learning_rate)
-
-        callbacks = [
+        '''
+        default_callbacks = [
             EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
             ModelCheckpoint(monitor='val_loss',
                             mode='min',
-                            save_top_k=3,
+                            save_top_k=1,
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
                             filename='transformer-{epoch:02d}-{val_loss:.4f}')
         ]
+        '''
+
+        default_callbacks = [EarlyStopping(monitor='val_f1_macro', mode='max', patience=15, min_delta=1e-4),
+
+                             ModelCheckpoint(monitor='val_f1_macro',
+                                             mode='max',
+                                             save_top_k=1,
+                                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
+                                             filename='transformer-{epoch:02d}-best-f1')
+                             ]
+
+        if callbacks:
+            default_callbacks.extend(callbacks)
 
         logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
@@ -100,7 +115,7 @@ class Transformer:
         # Até lá, manter benchmark = True para ser mais rápido
         # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                                  max_epochs=max_epochs, callbacks=callbacks, logger=logger)
+                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger)
 
         self.trainer.fit(self.model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
