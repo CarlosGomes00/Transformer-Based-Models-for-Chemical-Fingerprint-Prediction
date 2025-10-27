@@ -30,7 +30,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
                         dropout_rate=dropout_rate,
                         focal_alpha=focal_alpha,
                         focal_gamma=focal_gamma,
-                        # pos_weight=pos_weight,
+                        pos_weight=1,
                         loss_func='focal',
                         weight_decay=weight_decay,
                         learning_rate=learning_rate

@@ -1,7 +1,7 @@
 import torch
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
+import lightning.pytorch as pl
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
+from lightning.pytorch.loggers import TensorBoardLogger
 from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy as np
 import json

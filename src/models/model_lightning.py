@@ -1,5 +1,5 @@
 import torch
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 from torchmetrics import F1Score
 
 from src.training.training import training_setup, training_setup_weighted, train_step_lightning
