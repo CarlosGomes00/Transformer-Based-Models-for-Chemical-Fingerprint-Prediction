@@ -32,6 +32,7 @@ def main(args):
     study = optuna.create_study(direction='maximize')
     study.optimize(func, n_trials=args.n_trials)
 
+    print(f'Number of trials: {len(study.trials)}')
     print(f'Best trial: {study.best_value}')
     print(f'Best hyperparams: {study.best_params}')
 
@@ -39,7 +40,17 @@ def main(args):
     with open(best_hyperparams_path, 'w') as f:
         json.dump(study.best_params, f, indent=4)
 
-    print('Best hyperparams')
+    plot1 = optuna.visualization.plot_optimization_history(study)
+    plot2 = optuna.visualization.plot_slice(study, params=['d_model', 'n_head', 'num_layers', 'dropout_rate',
+                                                           'focal_alpha', 'focal_gamma', 'learning_rate', 'weight_decay'])
+    plot3 = optuna.visualization.plot_param_importances(study)
+
+    plot1.write_image(artifacts_dir / 'optimization_history.png')
+    plot2.write_image(artifacts_dir / 'plot_slice.png')
+    plot3.write_image(artifacts_dir / 'plot_param_importances.png')
+
+    print(f'Best hyperparams saved in: {best_hyperparams_path}')
+    print(f'Plots saved in: {artifacts_dir}')
 
 
 if __name__ == '__main__':
