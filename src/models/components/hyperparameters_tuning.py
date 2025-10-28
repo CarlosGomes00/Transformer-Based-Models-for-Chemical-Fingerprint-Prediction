@@ -40,7 +40,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
 
     model_fitted = model.fit(train_loader=loaders['train'],
                              val_loader=loaders['val'],
-                             max_epochs=50,
+                             max_epochs=5,
                              callbacks=[pruning_callback],
                              trial=True)
 

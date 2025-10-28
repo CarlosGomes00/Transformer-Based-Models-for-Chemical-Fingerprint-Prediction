@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         help='Artifacts directory')
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
     parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
-    parser.add_argument('--n_trials', type=int, default=10, help='Number of trials')
+    parser.add_argument('--n_trials', type=int, default=50, help='Number of trials')
 
     args = parser.parse_args()
     main(args)
