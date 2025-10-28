@@ -41,6 +41,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
     model_fitted = model.fit(train_loader=loaders['train'],
                              val_loader=loaders['val'],
                              max_epochs=50,
-                             callbacks=[pruning_callback])
+                             callbacks=[pruning_callback],
+                             trial=True)
 
     return model.trainer.callback_metrics["val_f1_macro"].item()

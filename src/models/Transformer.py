@@ -11,6 +11,8 @@ from rdkit import DataStructs
 from src.models.model_lightning import TransformerLightning
 from src.utils import tensor_to_bitvect
 
+
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -52,7 +54,7 @@ class Transformer:
         self.best_model_path = None
         self.is_fitted = False
 
-    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None):
+    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None, trial=False):
         """
         Train the transformer model
 
@@ -67,6 +69,8 @@ class Transformer:
                 If True, runs 1 batch to ensure code will execute without errors (Debugging purposes)
             callbacks : list
                 A list of extra callbacks to add to the trainer
+            trial : bool
+                If true, puts the model in tunning mode, wich makes it dont save the checkpoints
         """
 
         from src.models.model_lightning import TransformerLightning
@@ -97,32 +101,41 @@ class Transformer:
         ]
         '''
 
-        default_callbacks = [EarlyStopping(monitor='val_f1_macro', mode='max', patience=15, min_delta=1e-4),
+        list_of_callbacks = [EarlyStopping(monitor='val_f1_macro', mode='max', patience=15, min_delta=1e-4)]
+        logger = True
+        enable_checkpointing = True
 
-                             ModelCheckpoint(monitor='val_f1_macro',
-                                             mode='max',
-                                             save_top_k=1,
-                                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                                             filename='transformer-{epoch:02d}-best-f1')
-                             ]
+        if trial:
+            logger = False
+            enable_checkpointing = False
+
+        else:
+            list_of_callbacks.append(ModelCheckpoint(monitor='val_f1_macro',
+                                                     mode='max',
+                                                     save_top_k=1,
+                                                     dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
+                                                     filename='transformer-{epoch:02d}-best-f1'))
+
+            logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
         if callbacks:
-            default_callbacks.extend(callbacks)
-
-        logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
+            list_of_callbacks.extend(callbacks)
 
         # deterministic = True quando o modelo estiver pronto para reprodutibilidade
         # Até lá, manter benchmark = True para ser mais rápido
         # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger)
+                                  max_epochs=max_epochs, callbacks=list_of_callbacks, logger=logger,
+                                  enable_checkpointing=enable_checkpointing)
 
         self.trainer.fit(self.model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
-        self.best_model_path = self.trainer.checkpoint_callback.best_model_path
-        self.is_fitted = True
-
-        return self.best_model_path
+        if trial:
+            return self
+        else:
+            self.best_model_path = self.trainer.checkpoint_callback.best_model_path
+            self.is_fitted = True
+            return self.best_model_path
 
     def eval(self, test_loader, threshold=0.5, save_results=True):
 
