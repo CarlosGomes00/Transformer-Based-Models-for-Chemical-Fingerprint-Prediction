@@ -6,18 +6,17 @@ from optuna.integration import PyTorchLightningPruningCallback
 def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
 
     d_model = trial.suggest_categorical('d_model', [128, 256, 512])
-
     valid_n_heads = [n for n in [2, 4, 8, 16] if d_model % n == 0]
     n_head = trial.suggest_categorical('n_head', valid_n_heads)
-
     num_layers = trial.suggest_int('num_layers', 2, 6, step=1)
-    dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
 
-    learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-3, log=True)
+    dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True)
 
+    learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-3, log=True)
+
     # pos_weight = trial.suggest_int('pos_weight', 1, 100, log=True)
-    focal_alpha = trial.suggest_float('focal_alpha', 0.5, 0.95)
+    focal_alpha = trial.suggest_float('focal_alpha', 0.7, 0.95)
     focal_gamma = trial.suggest_float('focal_gamma', 0.5, 3)
 
     model = Transformer(seed=hyper_params['seed'],
@@ -40,7 +39,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
 
     model_fitted = model.fit(train_loader=loaders['train'],
                              val_loader=loaders['val'],
-                             max_epochs=5,
+                             max_epochs=30,
                              callbacks=[pruning_callback],
                              trial=True)
 
