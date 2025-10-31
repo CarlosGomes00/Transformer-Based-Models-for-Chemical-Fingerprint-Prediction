@@ -44,7 +44,9 @@ def main(args):
                             loss_func=args.loss,
                             pos_weight=args.pos_weight,
                             focal_gamma=args.focal_gamma,
-                            focal_alpha=args.focal_alpha)
+                            focal_alpha=args.focal_alpha,
+                            learning_rate=args.learning_rate,
+                            weight_decay=args.weight_decay)
 
         model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
                                  fast_dev_run=args.fast_dev_run)
@@ -82,6 +84,8 @@ if __name__ == '__main__':
                         'Exponent of the modulating factor (1 - p_t) to balance easy vs hard examples')
     parser.add_argument('--focal_alpha', type=float, default=0.25, help='Only used if loss=focal - '
                         'Weighting factor in range [0, 1] to balance positive vs negative examples or -1 for ignore')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay')
 
     args = parser.parse_args()
     main(args)
