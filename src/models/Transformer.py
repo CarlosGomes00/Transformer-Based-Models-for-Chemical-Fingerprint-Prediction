@@ -101,7 +101,7 @@ class Transformer:
         ]
         '''
 
-        list_of_callbacks = [EarlyStopping(monitor='val_f1_macro', mode='max', patience=15, min_delta=1e-4)]
+        list_of_callbacks = [EarlyStopping(monitor='val_loss', mode='min', patience=15, min_delta=1e-4)]
         logger = True
         enable_checkpointing = True
 
@@ -110,11 +110,11 @@ class Transformer:
             enable_checkpointing = False
 
         else:
-            list_of_callbacks.append(ModelCheckpoint(monitor='val_f1_macro',
-                                                     mode='max',
+            list_of_callbacks.append(ModelCheckpoint(monitor='val_loss',
+                                                     mode='min',
                                                      save_top_k=1,
                                                      dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                                                     filename='transformer-{epoch:02d}-best-f1'))
+                                                     filename='transformer-{epoch:02d}-{val_loss:.4f}'))
 
             logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
