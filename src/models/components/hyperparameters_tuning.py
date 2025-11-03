@@ -1,4 +1,7 @@
+import numpy as np
 import optuna
+from sklearn.metrics import f1_score
+
 from src.models.Transformer import Transformer
 from optuna.integration import PyTorchLightningPruningCallback
 
@@ -43,4 +46,18 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
                              callbacks=[pruning_callback],
                              trial=True)
 
-    return model.trainer.callback_metrics["val_loss"].item()
+    predictions = model_fitted.predict(loaders["val"])
+    y_true = []
+    for (mz_batch,
+         int_batch,
+         attention_mask_batch,
+         batch_spectrum_ids,
+         precursor_mask_batch,
+         targets_batch) in loaders["val"]:
+
+        y_true.append(targets_batch.detach().cpu().numpy())
+
+    y_true = np.hstack(y_true)
+    f1_ = f1_score(y_true, predictions, average='macro')
+
+    return f1_

@@ -34,6 +34,7 @@ class TransformerLightning(pl.LightningModule):
         if loss_func == 'bce':
             self.criterion, _ = training_setup(self.model, learning_rate=self.hparams.learning_rate,
                                                weight_decay=self.hparams.weight_decay) # Versão para BCE
+
         elif loss_func == 'bce_logits':
             self.criterion, _ = training_setup_weighted(self.model, self.hparams.pos_weight,
                                                         learning_rate=self.hparams.learning_rate,
@@ -41,7 +42,6 @@ class TransformerLightning(pl.LightningModule):
 
         self.val_f1 = F1Score(average='macro', task='multilabel', num_labels=self.hparams.fingerprint_dim)
 
-    # Teste para diferentes loss functions (para focal e BCEWL, utilizar a ultima layer sem sigmoid)
     def forward(self, mz_batch, int_batch, attention_mask):
         return self.model(mz_batch, int_batch, attention_mask)
 
