@@ -31,6 +31,7 @@ def training_setup(model, learning_rate: float = 0.001, weight_decay: float = 1e
     return criterion, optimizer
 
 
+
 def training_setup_weighted(model, pos_weight=1, learning_rate: float = 0.001, weight_decay: float = 1e-4):
 
     """

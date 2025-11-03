@@ -3,8 +3,8 @@ import numpy as np
 # Document for storing global variables
 
 # Paths
-#mgf_path = r'/home/cgomes/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/dataset/raw/cleaned_gnps_library.mgf'
-mgf_path = r"/Users/carla/PycharmProjects/Mestrado/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/datasets/raw/cleaned_gnps_library.mgf"
+mgf_path = r'/home/cgomes/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/dataset/raw/cleaned_gnps_library.mgf'
+#mgf_path = r"/Users/carla/PycharmProjects/Mestrado/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/datasets/raw/cleaned_gnps_library.mgf"
 
 # Fixed/default peaks related params
 noise_rmv_threshold = 0.01

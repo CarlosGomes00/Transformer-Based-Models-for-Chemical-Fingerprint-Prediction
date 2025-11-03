@@ -84,6 +84,7 @@ class TransformerLightning(pl.LightningModule):
         metrics = {'val_loss': loss,
                    'val_f1_macro': f1_score}
 
+        #TODO calculo da f1 está as ser por batch
         self.log_dict(metrics, on_epoch=True, prog_bar=True)
 
         return loss

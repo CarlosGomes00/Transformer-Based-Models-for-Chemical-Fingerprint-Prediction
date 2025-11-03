@@ -35,7 +35,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
                         learning_rate=learning_rate
                         )
 
-    pruning_callback = PyTorchLightningPruningCallback(trial, monitor="val_f1_macro")
+    pruning_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
 
     model_fitted = model.fit(train_loader=loaders['train'],
                              val_loader=loaders['val'],
@@ -43,4 +43,4 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
                              callbacks=[pruning_callback],
                              trial=True)
 
-    return model.trainer.callback_metrics["val_f1_macro"].item()
+    return model.trainer.callback_metrics["val_loss"].item()
