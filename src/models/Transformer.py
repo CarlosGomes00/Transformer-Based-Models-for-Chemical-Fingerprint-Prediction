@@ -11,8 +11,6 @@ from rdkit import DataStructs
 from src.models.model_lightning import TransformerLightning
 from src.utils import tensor_to_bitvect
 
-
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -54,7 +52,7 @@ class Transformer:
         self.best_model_path = None
         self.is_fitted = False
 
-    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None, trial=False):
+    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None):
         """
         Train the transformer model
 
@@ -69,8 +67,6 @@ class Transformer:
                 If True, runs 1 batch to ensure code will execute without errors (Debugging purposes)
             callbacks : list
                 A list of extra callbacks to add to the trainer
-            trial : bool
-                If true, puts the model in tunning mode, wich makes it dont save the checkpoints
         """
 
         from src.models.model_lightning import TransformerLightning
@@ -90,7 +86,7 @@ class Transformer:
                                           focal_alpha=self.focal_alpha,
                                           weight_decay=self.weight_decay,
                                           learning_rate=self.learning_rate)
-        '''
+
         default_callbacks = [
             EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
             ModelCheckpoint(monitor='val_loss',
@@ -98,44 +94,24 @@ class Transformer:
                             save_top_k=1,
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
                             filename='transformer-{epoch:02d}-{val_loss:.4f}')
-        ]
-        '''
+            ]
 
-        list_of_callbacks = [EarlyStopping(monitor='val_loss', mode='min', patience=15, min_delta=1e-4)]
-        logger = True
-        enable_checkpointing = True
-
-        if trial:
-            logger = False
-            enable_checkpointing = False
-
-        else:
-            list_of_callbacks.append(ModelCheckpoint(monitor='val_loss',
-                                                     mode='min',
-                                                     save_top_k=1,
-                                                     dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                                                     filename='transformer-{epoch:02d}-{val_loss:.4f}'))
-
-            logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
+        logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
         if callbacks:
-            list_of_callbacks.extend(callbacks)
+            default_callbacks.extend(callbacks)
 
         # deterministic = True quando o modelo estiver pronto para reprodutibilidade
         # Até lá, manter benchmark = True para ser mais rápido
         # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                                  max_epochs=max_epochs, callbacks=list_of_callbacks, logger=logger,
-                                  enable_checkpointing=enable_checkpointing)
+                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger)
 
         self.trainer.fit(self.model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
-        if trial:
-            return self
-        else:
-            self.best_model_path = self.trainer.checkpoint_callback.best_model_path
-            self.is_fitted = True
-            return self.best_model_path
+        self.best_model_path = self.trainer.checkpoint_callback.best_model_path
+        self.is_fitted = True
+        return self
 
     def eval(self, test_loader, threshold=0.5, save_results=True):
 
@@ -235,7 +211,7 @@ class Transformer:
         """
         Make predictions on new data
 
-        Important: Model must be fitted to the new data
+        Model must be fitted to the new data
 
         Parameters:
             data_loader
