@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import optuna
 from sklearn.metrics import f1_score
@@ -43,10 +44,12 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
     model_fitted = model.fit(train_loader=loaders['train'],
                              val_loader=loaders['val'],
                              max_epochs=30,
-                             callbacks=[pruning_callback],
-                             trial=True)
+                             callbacks=[pruning_callback])
 
-    predictions = model_fitted.predict(loaders["val"])
+    final_model = model.load_model(checkpoint_path=model_fitted.best_model_path, seed=hyper_params['seed'])
+
+    predictions = final_model.predict(loaders["val"], save_results=False)
+
     y_true = []
     for (mz_batch,
          int_batch,
@@ -57,7 +60,9 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
 
         y_true.append(targets_batch.detach().cpu().numpy())
 
-    y_true = np.hstack(y_true)
+    y_true = np.concatenate(y_true)
     f1_ = f1_score(y_true, predictions, average='macro')
+
+    os.remove(model_fitted.best_model_path)
 
     return f1_
