@@ -40,8 +40,6 @@ class TransformerLightning(pl.LightningModule):
                                                         learning_rate=self.hparams.learning_rate,
                                                         weight_decay=self.hparams.weight_decay)  # Versão para BCEWithLogits
 
-        self.val_f1 = F1Score(average='macro', task='multilabel', num_labels=self.hparams.fingerprint_dim)
-
     def forward(self, mz_batch, int_batch, attention_mask):
         return self.model(mz_batch, int_batch, attention_mask)
 
@@ -76,17 +74,7 @@ class TransformerLightning(pl.LightningModule):
         else:
             loss = self.criterion(outputs, targets_batch)
 
-        pred_probs = torch.sigmoid(outputs)
-        pred_bins = (pred_probs > 0.5).int()
-
-        f1_score = self.val_f1(pred_bins, targets_batch)
-
-        metrics = {'val_loss': loss,
-                   'val_f1_macro': f1_score}
-
-        #TODO calculo da f1 está as ser por batch
-        self.log_dict(metrics, on_epoch=True, prog_bar=True)
-
+        self.log('val_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
