@@ -61,7 +61,7 @@ def objective(trial: optuna.Trial, hyper_params: dict, loaders: dict):
         y_true.append(targets_batch.detach().cpu().numpy())
 
     y_true = np.concatenate(y_true)
-    f1_ = f1_score(y_true, predictions, average='macro')
+    f1_ = f1_score(y_true.ravel(), predictions.ravel(), average='macro')
 
     os.remove(model_fitted.best_model_path)
 
