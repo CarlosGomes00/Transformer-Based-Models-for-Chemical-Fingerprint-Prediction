@@ -33,12 +33,12 @@ class TransformerLightning(pl.LightningModule):
         self.criterion = None
         if loss_func == 'bce':
             self.criterion, _ = training_setup(self.model, learning_rate=self.hparams.learning_rate,
-                                               weight_decay=self.hparams.weight_decay) # Versão para BCE
+                                               weight_decay=self.hparams.weight_decay)
 
         elif loss_func == 'bce_logits':
             self.criterion, _ = training_setup_weighted(self.model, self.hparams.pos_weight,
                                                         learning_rate=self.hparams.learning_rate,
-                                                        weight_decay=self.hparams.weight_decay)  # Versão para BCEWithLogits
+                                                        weight_decay=self.hparams.weight_decay)
 
     def forward(self, mz_batch, int_batch, attention_mask):
         return self.model(mz_batch, int_batch, attention_mask)
@@ -57,7 +57,7 @@ class TransformerLightning(pl.LightningModule):
         else:
             loss = self.criterion(outputs, targets_batch)
 
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('Loss/Train', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -74,7 +74,7 @@ class TransformerLightning(pl.LightningModule):
         else:
             loss = self.criterion(outputs, targets_batch)
 
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('Loss/Val', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
