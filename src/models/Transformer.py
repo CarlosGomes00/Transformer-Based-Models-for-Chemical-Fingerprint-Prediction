@@ -113,6 +113,96 @@ class Transformer:
         self.is_fitted = True
         return self
 
+    def validate(self, val_loader, threshold=0.5, save_results=True):
+
+        """
+            Calculates evaluation metrics on the test set
+
+            Parameters:
+                val_loader : pytorch DataLoader
+                    Validation data loader
+                threshold : float
+                    Threshold to binning
+                save_results : bool
+                    If true (default), saves the results
+                """
+
+        if not self.is_fitted:
+            raise ValueError("Model must be fitted before scoring")
+
+        model = TransformerLightning.load_from_checkpoint(self.best_model_path)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        model.eval()
+        model.to(device)
+
+        preds, targets = [], []
+
+        with (torch.no_grad()):
+            for (mz_batch,
+                 int_batch,
+                 attention_mask_batch,
+                 batch_spectrum_ids,
+                 precursor_mask_batch,
+                 targets_batch) in val_loader:
+                mz_batch = mz_batch.to(device)
+                int_batch = int_batch.to(device)
+                attention_mask_batch = attention_mask_batch.to(device)
+                logits = model(mz_batch, int_batch, attention_mask_batch)
+                preds.append(logits.cpu())
+                targets.append(targets_batch)
+
+            pred_float = torch.cat(preds)
+            targets = torch.cat(targets)
+            loss_func = model.hparams.loss_func
+
+            if loss_func in ('bce_logits', 'focal'):
+                pred_probs = torch.sigmoid(pred_float)
+                pred_bins = (pred_probs > threshold).int()
+            elif loss_func == 'bce':
+                pred_bins = (pred_float > threshold).int()
+            else:
+                raise ValueError(f'Binarisation logic not defined for the loss function: {loss_func}')
+
+            y_true = targets.numpy()
+            y_pred = pred_bins.numpy()
+
+            precision_macro = precision_score(y_true, y_pred, average='macro')
+            precision_weighted = precision_score(y_true, y_pred, average='weighted')
+
+            recall_macro = recall_score(y_true, y_pred, average='macro')
+            recall_weighted = recall_score(y_true, y_pred, average='weighted')
+
+            f1_macro = f1_score(y_true, y_pred, average='macro')
+            f1_weighted = f1_score(y_true, y_pred, average='weighted')
+
+            true_bvs = [tensor_to_bitvect(fp) for fp in targets]
+            pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
+
+            tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
+            mean_tanimoto = float(np.mean(tanimoto_values))
+
+            validation_results = {'n_samples': int(targets.shape[0]),
+                                  'precision_macro': float(precision_macro),
+                                  'precision_weighted': float(precision_weighted),
+                                  'recall_macro': float(recall_macro),
+                                  'recall_weighted': float(recall_weighted),
+                                  'f1_macro': float(f1_macro),
+                                  'f1_weighted': float(f1_weighted),
+                                  'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
+
+            if save_results:
+                val_dir = REPO_ROOT / 'outputs/validation' / str(self.seed)
+                val_dir.mkdir(parents=True, exist_ok=True)
+
+                metrics_path = val_dir / "metrics.json"
+                with open(metrics_path, 'w') as f:
+                    json.dump(validation_results, f, indent=2)
+
+                print(f'Metrics saved to {metrics_path}')
+
+            return validation_results
+
     def eval(self, test_loader, threshold=0.5, save_results=True):
 
         """
@@ -167,8 +257,8 @@ class Transformer:
         else:
             raise ValueError(f'Binarisation logic not defined for the loss function: {loss_func}')
 
-        y_true = targets.numpy().ravel()
-        y_pred = pred_bins.numpy().ravel()
+        y_true = targets.numpy()
+        y_pred = pred_bins.numpy()
 
         precision_macro = precision_score(y_true, y_pred, average='macro')
         precision_weighted = precision_score(y_true, y_pred, average='weighted')
