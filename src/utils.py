@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 from rdkit import DataStructs
 from rdkit.DataStructs import ExplicitBitVect
+from rdkit import Chem
 
 
 def path_check(mgf_data: str) -> None:
@@ -495,3 +496,23 @@ def save_as_png(df, filename):
 
     plt.savefig(filename, bbox_inches='tight', dpi=300)
     plt.close(fig)
+
+
+def canonicalize_smiles(smiles_list: list) -> list:
+
+    canon_smiles = []
+
+    for s in smiles_list:
+        if pd.isna(s):
+            canon_smiles.append(None)
+            continue
+
+        mol = Chem.MolFromSmiles(s)
+        if mol:
+            canon_smiles.append(Chem.MolToSmiles(mol, isomericSmiles=True))
+        else:
+            canon_smiles.append(None)
+
+    return canon_smiles
+
+

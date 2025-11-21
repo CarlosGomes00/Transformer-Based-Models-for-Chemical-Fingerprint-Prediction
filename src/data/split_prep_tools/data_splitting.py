@@ -6,9 +6,45 @@ from pathlib import Path
 from deepmol.compound_featurization import MorganFingerprint
 from deepmol.datasets import SmilesDataset
 from src.data.mgf_tools.mgf_get import mgf_get_spectra, mgf_get_smiles
-from src.utils import generate_data_stats, calculate_max_num_peaks, mgf_deconvoluter, calculate_mz_vocabs
+from src.utils import (generate_data_stats, calculate_max_num_peaks, mgf_deconvoluter, calculate_mz_vocabs,
+                       canonicalize_smiles)
 from src.config import mgf_path, min_num_peaks, noise_rmv_threshold, mass_error
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def clean_splits(splits: dict, smiles_df: pd.DataFrame):
+
+    train_subset = smiles_df[smiles_df['spectrum_id'].isin(splits['train'])]
+    train_smiles = set(train_subset['canon_smiles'].dropna())
+
+    val_df = smiles_df[smiles_df['spectrum_id'].isin(splits['val'])].copy()
+    test_df = smiles_df[smiles_df['spectrum_id'].isin(splits['test'])].copy()
+
+    val_clean = val_df[~val_df['canon_smiles'].isin(train_smiles)]
+    test_clean = test_df[~test_df['canon_smiles'].isin(train_smiles)]
+
+    val_smiles_final = set(val_clean['canon_smiles'].dropna())
+    test_clean = test_clean[~test_clean['canon_smiles'].isin(val_smiles_final)]
+
+    val_final_df = val_clean.drop_duplicates(subset=['canon_smiles'], keep='first')
+    test_final_df = test_clean.drop_duplicates(subset=['smiles'], keep='first')
+
+    cleaned_splits = {
+        'train': splits['train'],
+        'val': val_final_df['spectrum_id'].tolist(),
+        'test': test_final_df['spectrum_id'].tolist()
+    }
+
+    stats = {
+        'original_val_count': len(splits['val']),
+        'cleaned_val_count': len(cleaned_splits['val']),
+        'removed_from_val': len(splits['val']) - len(cleaned_splits['val']),
+        'original_test_count': len(splits['test']),
+        'cleaned_test_count': len(cleaned_splits['test']),
+        'removed_from_test': len(splits['test']) - len(cleaned_splits['test']),
+    }
+
+    return cleaned_splits, stats
 
 
 def make_split(dataset, seed, output_dir,
@@ -109,44 +145,7 @@ def make_split(dataset, seed, output_dir,
     return splits
 
 
-# LEGACY - This function was designed to perform cleaning in the val and test set, but it was discontinued
-# due to its limitations.
-def clean_splits(splits: dict, smiles_df: pd.DataFrame):
-
-    train_smiles = set(smiles_df[smiles_df['spectrum_id'].isin(splits['train'])]['smiles'])
-
-    val_df = smiles_df[smiles_df['spectrum_id'].isin(splits['val'])]
-    test_df = smiles_df[smiles_df['spectrum_id'].isin(splits['test'])]
-
-    val_df = val_df[~val_df['smiles'].isin(train_smiles)]
-    test_df = test_df[~test_df['smiles'].isin(train_smiles)]
-
-    val_smiles = set(val_df['smiles'])
-    test_df = test_df[~test_df['smiles'].isin(val_smiles)]
-
-    val_final_df = val_df.drop_duplicates(subset=['smiles'], keep='first')
-    test_final_df = test_df.drop_duplicates(subset=['smiles'], keep='first')
-
-    cleaned_splits = {
-        'train': splits['train'],
-        'val': val_final_df['spectrum_id'].tolist(),
-        'test': test_final_df['spectrum_id'].tolist()
-    }
-
-    stats = {
-        'original_val_count': len(splits['val']),
-        'cleaned_val_count': len(cleaned_splits['val']),
-        'removed_from_val': len(splits['val']) - len(cleaned_splits['val']),
-        'original_test_count': len(splits['test']),
-        'cleaned_test_count': len(cleaned_splits['test']),
-        'removed_from_test': len(splits['test']) - len(cleaned_splits['test']),
-    }
-
-    return cleaned_splits, stats
-
-
 def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None,
-                         frac_train: float = 0.8,
                          frac_valid: float = 0.1,
                          frac_test: float = 0.1):
 
@@ -163,8 +162,6 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
             Directory for storing results
         num_spectra: int
             Number of spectra, if None reads all the spectra in the file
-        frac_train : float
-            Fraction of data to use for training
         frac_valid : float
             Fraction of data to use for validation
         frac_test : float
@@ -180,9 +177,13 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     print(f'Loaded {len(mgf_spectra)} spectra from MGF')
 
     smiles_df = mgf_get_smiles(mgf_spectra, as_dataframe=True)
-    print(f'Loaded {len(smiles_df)} spectra')
+    print(f'Loaded {len(smiles_df)} SMILES')
 
     print('\n2. Applying filtering and spectrum processing')
+
+    smiles_df['canon_smiles'] = canonicalize_smiles(smiles_df['smiles'].tolist())
+    smiles_df = smiles_df.dropna(subset=['canon_smiles'])
+
     max_num_peaks = calculate_max_num_peaks(mgf_spectra, percentile=95)
     mz_vocabs = calculate_mz_vocabs(mgf_spectra)
 
@@ -214,30 +215,92 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
 
     print('\n3. Generating fingerprints for valid spectra')
 
-    filtered_smiles = smiles_df[smiles_df['spectrum_id'].isin(spectrum_ids)]
+    filtered_smiles = smiles_df[smiles_df['spectrum_id'].isin(spectrum_ids)].copy()
 
-    smiles_list = filtered_smiles['smiles'].tolist()
+    smiles_list = filtered_smiles['canon_smiles'].tolist()
     ids_list = filtered_smiles['spectrum_id'].tolist()
 
     dataset = SmilesDataset(smiles=smiles_list, ids=ids_list)
     dataset = MorganFingerprint().featurize(dataset)
     dataset._y = dataset.X
 
-    initial_count = len(dataset)
-    dataset.remove_duplicates(inplace=True)
-    count_after_cleaning = len(dataset)
-    print(f"Dataset reduced from {initial_count} to {count_after_cleaning} unique samples.")
-
     print('\n4. Data Splitting')
 
-    splits = make_split(dataset, seed, output_dir, frac_train=frac_train, frac_valid=frac_valid, frac_test=frac_test)
+    test_seed = 1
+
+    split = MultiTaskStratifiedSplitter()
+
+    dataset_rest, _, test_dataset = split.train_valid_test_split(dataset, frac_train=1-frac_test, frac_valid=0,
+                                                                 frac_test=frac_test, seed=test_seed)
+
+    frac_value_adjusted = frac_valid / (1-frac_test)
+
+    train_dataset, val_dataset, _ = split.train_valid_test_split(dataset_rest, frac_train=1 - frac_value_adjusted,
+                                                                 frac_valid=frac_value_adjusted, frac_test=0, seed=seed)
+
+    raw_splits = {'train': train_dataset.ids, 'val': val_dataset.ids, 'test': test_dataset.ids}
+
+    clean_splits_dict, cleaning_stats = clean_splits(raw_splits, filtered_smiles)
 
     split_pkl = output_dir / str(seed) / 'split_ids.pkl'
+    with split_pkl.open('wb') as f:
+        pickle.dump(clean_splits_dict, f)
+
+    fp_df = pd.DataFrame(dataset.X, columns=[f'fp_{i}' for i in range(dataset.X.shape[1])])
+    fp_df['spectrum_id'] = dataset.ids
     fingerprints_pkl = output_dir / str(seed) / 'fingerprints.pkl'
+    fp_df.to_pickle(fingerprints_pkl)
+
+    print('\n5. Generating Split Statistics')
+
+    id_to_label = dict(zip(dataset.ids, dataset._y))
+
+    train_labels = np.array([id_to_label[spec_id] for spec_id in clean_splits_dict['train']])
+    val_labels = np.array([id_to_label[spec_id] for spec_id in clean_splits_dict['val']])
+    test_labels = np.array([id_to_label[spec_id] for spec_id in clean_splits_dict['test']])
+
+    stats_df, table_styled = generate_data_stats(train_labels, test_labels, val_labels)
+
+    stats_csv_path = seed_dir / 'split_statistics.csv'
+    stats_html_path = seed_dir / 'split_statistics.html'
+
+    with open(stats_html_path, 'w') as f:
+        f.write(table_styled.to_html())
+    stats_df.to_csv(stats_csv_path, index=False)
+
+    final_train_count = len(clean_splits_dict['train'])
+    final_val_count = len(clean_splits_dict['val'])
+    final_test_count = len(clean_splits_dict['test'])
+
+    total_final = final_train_count + final_val_count + final_test_count
+
+    summary_data = {
+        "split_seed": seed,
+        "test_seed": test_seed,  # seed fixa para o test set
+
+        "final_counts": {
+            "train": final_train_count,
+            "val": final_val_count,
+            "test": final_test_count,
+            "total": total_final
+        },
+
+        "final_fractions": {
+            "train": round(final_train_count / total_final, 4),
+            "val": round(final_val_count / total_final, 4),
+            "test": round(final_test_count / total_final, 4)
+        },
+
+        "cleaning_impact": cleaning_stats
+    }
+
+    summary_path = seed_dir / 'split_summary.json'
+    with open(summary_path, 'w') as f:
+        json.dump(summary_data, f, indent=4)
 
     if split_pkl.exists() and fingerprints_pkl.exists():
         print(f'Split IDs and Fingerprints saved')
     else:
         print('Files not found')
 
-    return splits
+    return clean_splits_dict
