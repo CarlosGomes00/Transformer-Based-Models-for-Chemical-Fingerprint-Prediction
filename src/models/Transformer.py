@@ -113,16 +113,18 @@ class Transformer:
         self.is_fitted = True
         return self
 
-    def validate(self, val_loader, threshold=0.5, save_results=True):
+    def validate(self, data_loader, split_name='val', threshold=0.5, save_results=True):
 
         """
-            Calculates evaluation metrics on the test set
+            Calculates evaluation metrics on any dataset split (train/val/test)
 
             Parameters:
-                val_loader : pytorch DataLoader
-                    Validation data loader
+                data_loader : pytorch DataLoader
+                    Train/Validation or Test data loader
                 threshold : float
                     Threshold to binning
+                split_name : str
+                    Name of the split ('val', 'test', 'train') to identify the file
                 save_results : bool
                     If true (default), saves the results
                 """
@@ -144,7 +146,7 @@ class Transformer:
                  attention_mask_batch,
                  batch_spectrum_ids,
                  precursor_mask_batch,
-                 targets_batch) in val_loader:
+                 targets_batch) in data_loader:
                 mz_batch = mz_batch.to(device)
                 int_batch = int_batch.to(device)
                 attention_mask_batch = attention_mask_batch.to(device)
@@ -182,7 +184,8 @@ class Transformer:
             tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
             mean_tanimoto = float(np.mean(tanimoto_values))
 
-            validation_results = {'n_samples': int(targets.shape[0]),
+            validation_results = {'split_name': split_name,
+                                  'n_samples': int(targets.shape[0]),
                                   'precision_macro': float(precision_macro),
                                   'precision_weighted': float(precision_weighted),
                                   'recall_macro': float(recall_macro),
@@ -195,7 +198,7 @@ class Transformer:
                 val_dir = REPO_ROOT / 'outputs/validation' / str(self.seed)
                 val_dir.mkdir(parents=True, exist_ok=True)
 
-                metrics_path = val_dir / "metrics.json"
+                metrics_path = val_dir / f"metrics_{split_name}.json"
                 with open(metrics_path, 'w') as f:
                     json.dump(validation_results, f, indent=2)
 
