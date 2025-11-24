@@ -88,12 +88,12 @@ class Transformer:
                                           learning_rate=self.learning_rate)
 
         default_callbacks = [
-            EarlyStopping(monitor='val_loss', patience=15, min_delta=1e-4),
-            ModelCheckpoint(monitor='val_loss',
+            EarlyStopping(monitor='Loss/Val', patience=15, min_delta=1e-4),
+            ModelCheckpoint(monitor='Loss/Val',
                             mode='min',
                             save_top_k=1,
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                            filename='transformer-{epoch:02d}-{val_loss:.4f}')
+                            filename='transformer-{epoch:02d}-{Loss/Val:.4f}')
             ]
 
         logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
