@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def main(args):
 
-    print('Starting the model evaluation on the test set...')
+    print('Starting the model evaluation...')
 
     try:
         artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
@@ -35,9 +35,20 @@ def main(args):
         print(f'Loading model from: {args.checkpoint_path}...')
         model = Transformer.load_model(checkpoint_path=args.checkpoint_path, seed=args.seed)
 
+        print('Performing the evaluation on the train set!')
+        results_train = model.validate(data_loader=loaders['train'], split_name='train', threshold=args.threshold,
+                                       save_results=args.save_results)
+        print(json.dumps(results_train, indent=4))
+
+        print('Performing the evaluation on the validation set!')
+        results_val = model.validate(data_loader=loaders['val'], split_name='val', threshold=args.threshold,
+                                     save_results=args.save_results)
+        print(json.dumps(results_val, indent=4))
+
         print('Performing the evaluation on the test set!')
-        results = model.validate(val_loader=loaders['val'], threshold=args.threshold, save_results=args.save_results)
-        print(json.dumps(results, indent=4))
+        results_test = model.validate(data_loader=loaders['test'], split_name='test', threshold=args.threshold,
+                                      save_results=args.save_results)
+        print(json.dumps(results_test, indent=4))
 
     except Exception as e:
         print(f'Error found: {e}')
