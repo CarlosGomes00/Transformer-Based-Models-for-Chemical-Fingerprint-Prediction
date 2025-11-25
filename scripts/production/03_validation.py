@@ -22,7 +22,7 @@ def main(args):
         max_num_peaks = pipeline_config['max_num_peaks']
         mz_vocabs = pipeline_config['mz_vocabs']
 
-        print('Loading the test set...')
+        print('Loading the data...')
         loaders = data_loader(
             seed=args.seed,
             batch_size=args.batch_size,

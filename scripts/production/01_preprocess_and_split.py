@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from pathlib import Path
 
-from src.data.split_prep_tools.data_splitting import preprocess_and_split, preprocess_and_split_2
+from src.data.split_prep_tools.data_splitting import preprocess_and_split
 from src.config import mgf_path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 def main(args):
 
     try:
-        preprocess_and_split_2(
+        preprocess_and_split(
             mgf_path=Path(args.mgf_path),
             seed=args.seed,
             output_dir=Path(args.output_dir),

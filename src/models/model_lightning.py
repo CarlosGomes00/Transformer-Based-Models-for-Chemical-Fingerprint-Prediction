@@ -93,5 +93,5 @@ class TransformerLightning(pl.LightningModule):
         return {'optimizer': optimizer,
                 'lr_scheduler': {
                     'scheduler': lr_scheduler,
-                    'monitor': 'val_loss',
+                    'monitor': 'Loss/Val',
                     'frequency': 1}}
