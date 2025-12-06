@@ -41,8 +41,7 @@ def main(args):
         json.dump(study.best_params, f, indent=4)
 
     plot1 = optuna.visualization.plot_optimization_history(study)
-    plot2 = optuna.visualization.plot_slice(study, params=['d_model', 'n_head', 'num_layers', 'dropout_rate',
-                                                           'focal_alpha', 'focal_gamma', 'learning_rate', 'weight_decay'])
+    plot2 = optuna.visualization.plot_slice(study, params=['dropout_rate', 'pos_weight', 'learning_rate', 'weight_decay'])
     plot3 = optuna.visualization.plot_param_importances(study)
 
     plot1.write_image(artifacts_dir / 'optimization_history.png')

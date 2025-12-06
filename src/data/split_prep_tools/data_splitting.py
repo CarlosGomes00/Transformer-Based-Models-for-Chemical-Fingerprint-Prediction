@@ -240,6 +240,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     print('\n4. Data Splitting')
 
     test_seed = 1
+    val_seed = 2
 
     split = MultiTaskStratifiedSplitter()
 
@@ -249,7 +250,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     frac_value_adjusted = frac_valid / (1-frac_test)
 
     train_dataset, val_dataset, _ = split.train_valid_test_split(dataset_rest, frac_train=1 - frac_value_adjusted,
-                                                                 frac_valid=frac_value_adjusted, frac_test=0, seed=seed)
+                                                                 frac_valid=frac_value_adjusted, frac_test=0, seed=val_seed)
 
     raw_splits = {'train': train_dataset.ids, 'val': val_dataset.ids, 'test': test_dataset.ids}
 
@@ -290,7 +291,8 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     summary_data = {
         "mode": "unique_molecules" if remove_train_duplicates else "augmented_train",
         "split_seed": seed,
-        "test_seed": test_seed,  # seed fixa para o test set
+        "test_seed": test_seed,
+        "val_seed": val_seed, # seed fixa para o val e test set
 
         "final_counts": {
             "train": final_train_count,
