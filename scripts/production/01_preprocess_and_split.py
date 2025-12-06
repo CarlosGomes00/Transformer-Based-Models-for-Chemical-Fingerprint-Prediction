@@ -18,6 +18,7 @@ def main(args):
             num_spectra=args.num_spectra,
             frac_valid=args.frac_valid,
             frac_test=args.frac_test,
+            remove_train_duplicates=args.remove_duplicates
         )
     except Exception as e:
         print(f'Error found: {e}')
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_spectra', type=int, default=None, help='Number of spectra, all by default')
     parser.add_argument('--frac_valid', type=float, default=0.1, help='Fraction of validation data')
     parser.add_argument('--frac_test', type=float, default=0.1, help='Fraction of test data')
+    parser.add_argument('--remove_duplicates', action='store_true', help= 'Dont enable data augmentation')
 
     args = parser.parse_args()
     main(args)
