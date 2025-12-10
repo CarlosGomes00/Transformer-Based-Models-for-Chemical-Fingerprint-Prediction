@@ -128,7 +128,7 @@ def train_step_lightning(model, batch, criterion):
 
     mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch = batch
 
-    outputs = model(mz_batch, int_batch, attention_mask_batch)  #Adicionar a precursor_mask ao foward
+    outputs = model(mz_batch, int_batch, attention_mask_batch) 
     loss = criterion(outputs, targets_batch)
 
     return loss
