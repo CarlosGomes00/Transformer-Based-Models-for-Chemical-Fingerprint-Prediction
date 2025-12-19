@@ -41,6 +41,7 @@ def main(args):
                             n_head=args.n_head,
                             num_layers=args.num_layers,
                             dropout_rate=args.dropout_rate,
+                            batch_norm=not args.no_batch_norm,
                             loss_func=args.loss,
                             pos_weight=args.pos_weight,
                             focal_gamma=args.focal_gamma,
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_spectra', type=int, default=None, help='Number of spectra, all by default')
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
     parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
     parser.add_argument('--max_epochs', type=int, default=100, help='Number of epochs')
 
@@ -76,6 +77,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_head', type=int, default=4)
     parser.add_argument('--num_layers', type=int, default=4)
     parser.add_argument('--dropout_rate', type=float, default=0.1)
+    parser.add_argument('--no_batch_norm', action='store_true', help='Turn off batch normalization')
 
     parser.add_argument('--loss', type=str, default='bce_logits', help='Loss to be used (bce, bce_logits, focal')
     parser.add_argument('--pos_weight', type=float, default=1, help='Only used if loss=bce_logits - '

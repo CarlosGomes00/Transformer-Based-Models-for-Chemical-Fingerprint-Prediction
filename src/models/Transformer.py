@@ -25,6 +25,7 @@ class Transformer:
                  n_head,
                  num_layers,
                  dropout_rate,
+                 batch_norm,
                  loss_func,
                  pos_weight,
                  focal_gamma,
@@ -46,6 +47,7 @@ class Transformer:
         self.focal_alpha = focal_alpha
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
+        self.batch_norm = batch_norm
 
         self.model = None
         self.trainer = None
@@ -80,6 +82,7 @@ class Transformer:
                                           num_layers=self.num_layers,
                                           dropout_rate=self.dropout_rate,
                                           fingerprint_dim=self.morgan_default_dim,
+                                          batch_norm=self.batch_norm,
                                           loss_func=self.loss_func,
                                           pos_weight=self.pos_weight,
                                           focal_gamma=self.focal_gamma,
@@ -399,6 +402,7 @@ class Transformer:
                 num_layers=pl_model.hparams.num_layers,
                 dropout_rate=pl_model.hparams.dropout_rate,
                 morgan_default_dim=pl_model.hparams.fingerprint_dim,
+                batch_norm=pl_model.hparams.batch_norm,
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,
                 focal_gamma=pl_model.hparams.focal_gamma,

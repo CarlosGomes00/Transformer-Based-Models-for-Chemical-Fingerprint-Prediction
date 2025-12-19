@@ -15,7 +15,8 @@ class TransformerLightning(pl.LightningModule):
                  weight_decay,
                  loss_func: str = 'bce_logits',
                  focal_gamma: float = 2,
-                 focal_alpha: float = 0.25):
+                 focal_alpha: float = 0.25,
+                 batch_norm=True):
 
         super().__init__()
 
@@ -28,7 +29,8 @@ class TransformerLightning(pl.LightningModule):
                                         dropout_rate=dropout_rate,
                                         fingerprint_dim=fingerprint_dim,
                                         max_seq_len=max_seq_len,
-                                        head_type='logits' if loss_func in ('bce_logits', 'focal') else 'sigmoid')
+                                        head_type='logits' if loss_func in ('bce_logits', 'focal') else 'sigmoid',
+                                        batch_norm=batch_norm)
 
         self.criterion = None
         if loss_func == 'bce':

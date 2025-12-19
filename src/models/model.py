@@ -27,7 +27,7 @@ class EncoderTransformer(nn.Module):
     """
 
     def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, max_seq_len, fingerprint_dim=2048,
-                 head_type='logits'):
+                 head_type='logits', batch_norm=True):
         super().__init__()
 
         self.vocab_size = vocab_size
@@ -38,6 +38,7 @@ class EncoderTransformer(nn.Module):
         self.max_seq_len = max_seq_len
         self.fingerprint_dim = fingerprint_dim
         self.head_type = head_type
+        self.batch_norm = batch_norm
 
         self.peak_embedding = PeakEmbedding(vocab_size, d_model, dropout_rate)
         self.precursor_embedding = PrecursorEmbeddingN(vocab_size, d_model, dropout_rate)
@@ -49,9 +50,9 @@ class EncoderTransformer(nn.Module):
         self.pooling = mean_pooling
 
         if head_type == 'logits':
-            self.fingerprint_head = FingerprintHeadLogits(d_model, fingerprint_dim)
+            self.fingerprint_head = FingerprintHeadLogits(d_model, fingerprint_dim, batch_norm)
         else:
-            self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
+            self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim, batch_norm)
 
     def forward(self, mz_batch, int_batch, attention_mask):
 
