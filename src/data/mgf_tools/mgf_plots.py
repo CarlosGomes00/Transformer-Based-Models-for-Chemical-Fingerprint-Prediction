@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 import os
 from tqdm import tqdm
 
@@ -164,3 +166,54 @@ def plot_spectra_distribution(spectra: list, n_compounds: int = 20, top_percent:
     plt.title("Distribution of compounds")
     plt.tight_layout()
     plt.show()
+
+
+
+def plot_peak_distribution_comparison(raw_spectra: list, processed_spectra: list, max_peaks_plot=200):
+    """
+    Plots comparative histograms of peak counts (Before vs After processing).
+
+    Parameters:
+        raw_spectra: List of dicts (from pyteomics.mgf.read)
+        processed_spectra: List of tuples (from deconvoluter)
+        max_peaks_plot: Limit x-axis for better visualization (zoom in relevant area)
+    """
+
+    print("Extracting raw stats...")
+    raw_counts = []
+    for s in raw_spectra:
+        mz = s.get('m/z array', [])
+        raw_counts.append(len(mz))
+
+    print("Extracting processed stats...")
+    proc_counts = []
+    for s in processed_spectra:
+        mz_tokens = s[2]
+        proc_counts.append(len(mz_tokens))
+
+    plt.figure(figsize=(12, 6))
+
+    bins = np.arange(0, 200, 2)
+
+    plt.hist(raw_counts, bins=bins, color='red', alpha=0.3, label='Raw', density=True)
+
+    plt.hist(proc_counts, bins=bins, color='blue', alpha=0.5, label='Processed', density=True)
+
+    plt.xlim(0, 200)
+    plt.title("Impact of Processing on Peak Count Distribution")
+    plt.xlabel("Number of Peaks per Spectrum")
+    plt.ylabel("Density")
+    plt.legend()
+    plt.grid(True, alpha=0.2)
+
+    raw_med = np.median(raw_counts)
+    proc_med = np.median(proc_counts)
+
+    plt.text(0.7, 0.8, f"Raw Median: {raw_med:.0f}\nProc Median: {proc_med:.0f}",
+             transform=plt.gca().transAxes,
+             bbox=dict(facecolor='white', alpha=0.8))
+
+    plt.tight_layout()
+    plt.show()
+
+    return raw_counts, proc_counts

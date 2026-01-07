@@ -23,7 +23,7 @@ def training_setup(model, learning_rate: float = 0.001, weight_decay: float = 1e
     """
 
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(
+    optimizer = optim.AdamW(
         model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay
@@ -55,7 +55,7 @@ def training_setup_weighted(model, pos_weight=1, learning_rate: float = 0.001, w
     pos_weight = torch.tensor([pos_weight] * model.fingerprint_dim)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    optimizer = optim.Adam(
+    optimizer = optim.AdamW(
         model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay
@@ -67,7 +67,7 @@ def training_setup_focal(model, alpha=0.25, gamma=2, learning_rate: float = 0.00
 
     criterion = sigmoid_focal_loss(alpha=alpha, gamma=gamma)
 
-    optimizer = optim.Adam(
+    optimizer = optim.AdamW(
         model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay

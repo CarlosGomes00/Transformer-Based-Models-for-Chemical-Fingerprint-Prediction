@@ -333,6 +333,7 @@ class Transformer:
 
         preds = []
         n_samples = 0
+        loss = model.hparams.loss_func
 
         print('Making predictions...')
         print(f'Device: {device}')
@@ -352,7 +353,12 @@ class Transformer:
                 preds.append(logits.cpu())
                 n_samples += logits.shape[0]
 
-        pred_probabilities = torch.cat(preds, dim=0)
+        raw_outputs = torch.cat(preds, dim=0)
+
+        if loss in ('bce_logits', 'focal'):
+            pred_probabilities = torch.sigmoid(raw_outputs)
+        elif loss == 'bce':
+            pred_probabilities = raw_outputs
 
         print(f'Predictions made for {n_samples} samples')
 

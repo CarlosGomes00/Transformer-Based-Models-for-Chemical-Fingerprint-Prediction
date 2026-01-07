@@ -29,7 +29,7 @@ class SpectraDataset(Dataset):
         return self.data[idx]
 
 
-def data_loader(seed, batch_size: int = 32, num_workers=4, num_spectra: int = None,
+def data_loader(seed, batch_size, num_workers, num_spectra: int = None,
                 mgf_path: str = mgf_path, max_num_peaks: int = None, mz_vocabs=None):
 
     mgf_spectra = mgf_get_spectra(mgf_path, num_spectra)
@@ -92,7 +92,7 @@ def data_loader(seed, batch_size: int = 32, num_workers=4, num_spectra: int = No
             collate_fn=collate_fn,
             shuffle=is_train,
             num_workers=num_workers,
-            persistent_workers=True
+            persistent_workers=True if num_workers > 0 else False
         )
 
     return loaders
