@@ -108,7 +108,7 @@ class Transformer:
         # Até lá, manter benchmark = True para ser mais rápido
         # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger)
+                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger, precision='16-mixed')
 
         self.trainer.fit(self.model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
