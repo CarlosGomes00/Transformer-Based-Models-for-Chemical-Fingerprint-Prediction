@@ -1,5 +1,6 @@
 from pyteomics import mgf
 import pandas as pd
+from rdkit import Chem
 
 
 def mgf_get_spectra(mgf_data: str, num_spectra: int = None, spectrum_id: str = None):
@@ -59,6 +60,15 @@ def mgf_get_smiles(spectra: list[dict], as_dataframe: bool = False):
     for spec in spectra:
         spec_id = spec["params"].get("spectrum_id")
         smiles = spec["params"].get("smiles")
+        if not smiles:
+            inchi = spec["params"].get("inchi")
+            if inchi:
+                try:
+                    mol = Chem.MolFromInchi(inchi)
+                    if mol:
+                        smiles = Chem.MolToSmiles(mol)
+                except:
+                    pass
         if spec_id and smiles:
             ids.append(spec_id)
             smiles_list.append(smiles)
