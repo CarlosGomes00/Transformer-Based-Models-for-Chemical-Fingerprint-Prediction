@@ -59,6 +59,11 @@ def data_loader(seed, batch_size, num_workers, num_spectra: int = None,
     vocab_size = len(mz_vocabs)
 
     for split_name, split_ids in splits.items():
+        
+        if len(split_ids) == 0:
+            print(f'Skipping empty split: {split_name}')
+            continue
+
         split_ids_set = set(split_ids)
 
         filtered_spectra = []
