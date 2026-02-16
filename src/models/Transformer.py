@@ -91,7 +91,7 @@ class Transformer:
                                           learning_rate=self.learning_rate)
 
         default_callbacks = [
-            EarlyStopping(monitor='Loss/Val', patience=15, min_delta=1e-4),
+            EarlyStopping(monitor='Loss/Val', patience=20),
             ModelCheckpoint(monitor='Loss/Val',
                             mode='min',
                             save_top_k=1,
@@ -108,7 +108,8 @@ class Transformer:
         # Até lá, manter benchmark = True para ser mais rápido
         # Ele já dá prioridade ao benchmark, por isso remover depois
         self.trainer = pl.Trainer(accelerator='auto', benchmark=True, deterministic=True, fast_dev_run=fast_dev_run,
-                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger, precision='16-mixed')
+                                  max_epochs=max_epochs, callbacks=default_callbacks, logger=logger, gradient_clip_val=1.0,
+                                  gradient_clip_algorithm='norm', accumulate_grad_batches=2)
 
         self.trainer.fit(self.model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
@@ -148,7 +149,6 @@ class Transformer:
                  int_batch,
                  attention_mask_batch,
                  batch_spectrum_ids,
-                 precursor_mask_batch,
                  targets_batch) in data_loader:
                 mz_batch = mz_batch.to(device)
                 int_batch = int_batch.to(device)
@@ -172,14 +172,14 @@ class Transformer:
             y_true = targets.numpy()
             y_pred = pred_bins.numpy()
 
-            precision_macro = precision_score(y_true, y_pred, average='macro')
-            precision_weighted = precision_score(y_true, y_pred, average='weighted')
+            precision_macro = precision_score(y_true, y_pred, average='macro', zero_division=0)
+            precision_weighted = precision_score(y_true, y_pred, average='weighted', zero_division=0)
 
-            recall_macro = recall_score(y_true, y_pred, average='macro')
-            recall_weighted = recall_score(y_true, y_pred, average='weighted')
+            recall_macro = recall_score(y_true, y_pred, average='macro', zero_division=0)
+            recall_weighted = recall_score(y_true, y_pred, average='weighted', zero_division=0)
 
-            f1_macro = f1_score(y_true, y_pred, average='macro')
-            f1_weighted = f1_score(y_true, y_pred, average='weighted')
+            f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
+            f1_weighted = f1_score(y_true, y_pred, average='weighted', zero_division=0)
 
             true_bvs = [tensor_to_bitvect(fp) for fp in targets]
             pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
@@ -239,7 +239,6 @@ class Transformer:
                  int_batch,
                  attention_mask_batch,
                  batch_spectrum_ids,
-                 precursor_mask_batch,
                  targets_batch) in test_loader:
                 # Passar os batches para device, seja ele cuda ou cpu
                 mz_batch = mz_batch.to(device)

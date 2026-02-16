@@ -41,13 +41,15 @@ class TransformerLightning(pl.LightningModule):
             self.criterion, _ = training_setup_weighted(self.model, self.hparams.pos_weight,
                                                         learning_rate=self.hparams.learning_rate,
                                                         weight_decay=self.hparams.weight_decay)
+            
+        self.loss_func = loss_func
 
     def forward(self, mz_batch, int_batch, attention_mask):
         return self.model(mz_batch, int_batch, attention_mask)
 
     def training_step(self, batch, batch_idx):
 
-        mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch = batch
+        mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, targets_batch = batch
 
         outputs = self.forward(mz_batch, int_batch, attention_mask_batch)
 
@@ -64,7 +66,7 @@ class TransformerLightning(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
 
-        mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch = batch
+        mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, targets_batch = batch
 
         outputs = self.forward(mz_batch, int_batch, attention_mask_batch)
 
@@ -76,7 +78,21 @@ class TransformerLightning(pl.LightningModule):
         else:
             loss = self.criterion(outputs, targets_batch)
 
+        if self.loss_func in ('bce_logits', 'focal'):
+            pred_probs = torch.sigmoid(outputs)
+        else:
+            pred_probs = outputs
+        
+        preds_bin = (pred_probs > 0.5).int()
+
+        intersection = (preds_bin * targets_batch).sum(dim=1)
+        union = preds_bin.sum(dim=1) + targets_batch.sum(dim=1) - intersection
+
+        tanimoto_batch = intersection / (union + 1e-6)
+        mean_tanimoto_batch = tanimoto_batch.mean()
+
         self.log('Loss/Val', loss, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('Tanimoto/Val', tanimoto_batch.mean(), on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
@@ -89,7 +105,7 @@ class TransformerLightning(pl.LightningModule):
             mode='min',
             factor=0.5,
             patience=10,
-            min_lr=1e-6
+            min_lr=1e-7
         )
 
         return {'optimizer': optimizer,
