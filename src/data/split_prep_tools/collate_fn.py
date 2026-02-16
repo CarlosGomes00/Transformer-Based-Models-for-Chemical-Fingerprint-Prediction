@@ -64,7 +64,6 @@ class SpectraCollateFn:
         padded_int_tensors = []
         batch_attention_mask = []
         batch_spectrum_ids = []
-        precursor_masks = []
         targets = []
 
         for training_tuple in batch:
@@ -73,6 +72,10 @@ class SpectraCollateFn:
 
             mz_tokens_list = [tokenized_precursor] + tokenized_mz
             int_tokens_list = [precursor_int] + int_array.tolist()
+
+            if len(mz_tokens_list) > self.max_length:
+                mz_tokens_list = mz_tokens_list[:self.max_length]
+                int_tokens_list = int_tokens_list[:self.max_length]
 
             num_padding_needed = self.max_length - len(mz_tokens_list)
 
@@ -87,8 +90,6 @@ class SpectraCollateFn:
             int_tokens_tensor = torch.tensor(int_tokens_list, dtype=torch.float32)
 
             new_attention_mask = (mz_tokens_tensor != self.padding_token_value)
-            precursor_mask = torch.zeros(self.max_length, dtype=torch.float32)
-            precursor_mask[0] = 1
 
             target_fingerprint = self._get_fingerprint_for_id(spectrum_id)
 
@@ -96,13 +97,11 @@ class SpectraCollateFn:
             padded_int_tensors.append(int_tokens_tensor)
             batch_attention_mask.append(new_attention_mask)
             batch_spectrum_ids.append(spectrum_id)
-            precursor_masks.append(precursor_mask)
             targets.append(target_fingerprint)
 
         mz_batch = torch.stack(padded_mz_tensors)
         int_batch = torch.stack(padded_int_tensors)
         attention_mask_batch = torch.stack(batch_attention_mask)
-        precursor_mask_batch = torch.stack(precursor_masks)
         targets_batch = torch.stack(targets)
 
-        return mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch
+        return mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, targets_batch
