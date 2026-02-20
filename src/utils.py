@@ -516,3 +516,22 @@ def canonicalize_smiles(smiles_list: list) -> list:
     return canon_smiles
 
 
+def calculate_tanimoto(y_true : list, y_pred : list):
+
+    """
+    Calculates the Tanimoto coefficient
+
+    y_true : list
+        List with the real fingerprints
+    y_pred : list
+        List with the predicted fingerprints
+    """
+    
+    assert len(y_true) == len(y_pred), 'y_true must have the same size as y_pred'
+
+    true_bvs = [tensor_to_bitvect(fp) for fp in y_true]
+    pred_bvs = [tensor_to_bitvect(fp) for fp in y_pred]
+    tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
+    
+    return np.array(tanimoto_values)
+
