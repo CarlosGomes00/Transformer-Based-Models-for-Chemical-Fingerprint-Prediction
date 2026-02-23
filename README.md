@@ -21,10 +21,10 @@ The structure of the repository has been organized in a modular way to make it e
     ├── scripts/
     │   └── production/ # Main pipeline scripts
     └── src/ # Project source code
-        ├── data/ # Data manipulation modules
-        ├── models/ # Definition of models and wrappers
+        ├── data/ 
+        ├── models/ 
         ├── training/
-        ├── config.py # Global settings (e.g. paths)
+        ├── config.py 
         └── utils.py
 ```
 
@@ -77,10 +77,10 @@ python -m scripts.production.01_preprocess_and_split --seed 1
 
 #### **2. Model training**
 
-This script loads the corresponding `seed` data, instantiates the model, and executes the training according to the given parameters.
+This script loads the corresponding `seed` data, instantiates the model, and executes the training according to the given parameters. To monitor your training, we recommend using TensorBoard, using the training logs file.
 
 ```
-python -m scripts.production.02_train_model --seed 1 --fast_dev_run
+python -m scripts.production.02_train_model --seed 1
 ```
 
 
@@ -94,11 +94,6 @@ python -m scripts.production.03_evaluation --seed 1 --checkpoint_path path.to.th
 
 **All scripts have additional flags that can and should be changed for greater customisation.**
 
-
-## Notebooks and API
-
-* The `Transformer` class in `src/models/Transformer.py` serves as a high-level API for interacting with the model.
-* If you prefer to use class methods instead of scripts, you can see how by looking at the examples in the notebooks. 
 
 
 Much of the work that can be found in this repository was inspired by and adapted from the excellent repository (https://github.com/idslme/IDSL_MINT)
