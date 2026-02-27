@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 from src.models.components.embeddings import PeakEmbedding
 from src.models.components.positional_encoding import PositionalEncoding
-#from src.models.components.pooling import mean_pooling
-from src.models.components.fingerprint_head import FingerprintHead, FingerprintHeadLogits
+from src.models.components.pooling import mean_pooling
+from src.models.components.fingerprint_head import *
 
 
 class EncoderTransformer(nn.Module):
@@ -42,16 +42,15 @@ class EncoderTransformer(nn.Module):
 
         self.peak_embedding = PeakEmbedding(vocab_size, d_model, dropout_rate, max_norm=2)
         self.positional_encoding = PositionalEncoding(d_model, max_seq_len, dropout_rate)
+        self.mean_pooling = mean_pooling
 
         encoder_layer = nn.TransformerEncoderLayer(d_model, nhead=nhead, dropout=dropout_rate, batch_first=True)
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-        #self.pooling = mean_pooling
-
         if head_type == 'logits':
-            self.fingerprint_head = FingerprintHeadLogits(d_model, fingerprint_dim, batch_norm)
+            self.fingerprint_head = BasicFingerprintHeadLogits(d_model, fingerprint_dim)
         else:
-            self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim, batch_norm)
+            self.fingerprint_head = BasicFingerprintHead(d_model, fingerprint_dim)
 
     def forward(self, mz_batch, int_batch, attention_mask):
 
@@ -77,8 +76,9 @@ class EncoderTransformer(nn.Module):
         src_key_padding_mask = ~attention_mask.bool()
         x = self.encoder(x, src_key_padding_mask=src_key_padding_mask)
 
-        cls_token = x[:, 0, :]
+        #cls_token = x[:, 0, :]
+        pooled_output = mean_pooling(x=x, attention_mask=attention_mask)
 
-        output = self.fingerprint_head(cls_token)
+        output = self.fingerprint_head(pooled_output)
 
         return output

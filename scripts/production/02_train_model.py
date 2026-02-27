@@ -73,8 +73,8 @@ if __name__ == '__main__':
                         'training and validation batch ')
 
     parser.add_argument('--fingerprint_dim', type=int, default=2048, help='Dimension of the fingerprints')
-    parser.add_argument('--d_model', type=int, default=128)
-    parser.add_argument('--n_head', type=int, default=4)
+    parser.add_argument('--d_model', type=int, default=512)
+    parser.add_argument('--n_head', type=int, default=8)
     parser.add_argument('--num_layers', type=int, default=4)
     parser.add_argument('--dropout_rate', type=float, default=0.1)
     parser.add_argument('--no_batch_norm', action='store_true', help='Turn off batch normalization')
@@ -86,7 +86,7 @@ if __name__ == '__main__':
                         'Exponent of the modulating factor (1 - p_t) to balance easy vs hard examples')
     parser.add_argument('--focal_alpha', type=float, default=0.25, help='Only used if loss=focal - '
                         'Weighting factor in range [0, 1] to balance positive vs negative examples or -1 for ignore')
-    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--learning_rate', type=float, default=0.0001, help='Learning rate')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay')
 
     args = parser.parse_args()
