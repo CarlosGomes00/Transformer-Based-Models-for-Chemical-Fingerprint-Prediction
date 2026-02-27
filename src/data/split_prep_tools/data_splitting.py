@@ -12,7 +12,8 @@ from src.config import mgf_path, min_num_peaks, noise_rmv_threshold, mass_error
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def clean_splits(splits: dict, smiles_df: pd.DataFrame, remove_train_duplicates: bool):
+def clean_splits(splits: dict, smiles_df: pd.DataFrame, remove_train_duplicates: bool, balance_dataset: bool = False, spectra_by_compound: int = 4):
+
 
     train_subset = smiles_df[smiles_df['spectrum_id'].isin(splits['train'])].copy()
 
@@ -21,6 +22,14 @@ def clean_splits(splits: dict, smiles_df: pd.DataFrame, remove_train_duplicates:
         train_final_df = train_subset.drop_duplicates(subset=['canon_smiles'], keep='first')
         train_ids = train_final_df['spectrum_id'].tolist()
         train_smiles = set(train_final_df['canon_smiles'].dropna())
+    
+    elif balance_dataset==True:
+        print(f'Balacing train dataset -> using max of {spectra_by_compound} spectra for each compound')
+        train_subset_shuffled = train_subset.sample(frac=1, random_state=1)
+        train_final_df = train_subset_shuffled.groupby('canon_smiles').head(spectra_by_compound).reset_index(drop=True)
+        train_ids = train_final_df['spectrum_id'].tolist()
+        train_smiles = set(train_final_df['canon_smiles'].dropna())
+
     else:
         train_ids = splits['train']
         train_smiles = set(train_subset['canon_smiles'].dropna())
@@ -158,7 +167,9 @@ def make_split(dataset, seed, output_dir,
 def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifacts", num_spectra=None,
                          frac_valid: float = 0.1,
                          frac_test: float = 0.1,
-                         remove_train_duplicates: bool = False):
+                         remove_train_duplicates: bool = False,
+                         balance_dataset: bool = False,
+                         spectra_by_compound:int = 4):
 
     """
     Function that splits the data and calculates some of the essential parameters
@@ -179,11 +190,19 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
         frac_test : float
             Fraction of data to use for testing
         remove_train_duplicates : bool
+            If true, removes all the duplicate spectra of the training set
+        balance_dataset : bool
+            If true, limits the number of spectra per compound
+        spectra_by_compound : int
+            Maximum number of spectra by compound allowed. balance_dataset must be true to use this argument
     """
 
     output_dir = Path(output_dir)
     seed_dir = output_dir / str(seed)
     seed_dir.mkdir(parents=True, exist_ok=True)
+
+    if remove_train_duplicates and balance_dataset:
+        raise ValueError('remove_train_duplicates and balance_dataset cannot both be True. Choose only one (or keep both False)')
 
     print('\n1. Loading spectra and SMILES from MGF')
     mgf_spectra = mgf_get_spectra(mgf_path, num_spectra=num_spectra)
@@ -239,22 +258,19 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
 
     print('\n4. Data Splitting')
 
-    test_seed = 1
-    val_seed = 2
-
     split = MultiTaskStratifiedSplitter()
 
     dataset_rest, _, test_dataset = split.train_valid_test_split(dataset, frac_train=1-frac_test, frac_valid=0,
-                                                                 frac_test=frac_test, seed=test_seed)
+                                                                 frac_test=frac_test)
 
     frac_value_adjusted = frac_valid / (1-frac_test)
 
     train_dataset, val_dataset, _ = split.train_valid_test_split(dataset_rest, frac_train=1 - frac_value_adjusted,
-                                                                 frac_valid=frac_value_adjusted, frac_test=0, seed=val_seed)
+                                                                 frac_valid=frac_value_adjusted, frac_test=0)
 
     raw_splits = {'train': train_dataset.ids, 'val': val_dataset.ids, 'test': test_dataset.ids}
 
-    clean_splits_dict, cleaning_stats = clean_splits(raw_splits, filtered_smiles, remove_train_duplicates)
+    clean_splits_dict, cleaning_stats = clean_splits(raw_splits, filtered_smiles, remove_train_duplicates, balance_dataset, spectra_by_compound)
 
     split_pkl = output_dir / str(seed) / 'split_ids.pkl'
     with split_pkl.open('wb') as f:
@@ -288,11 +304,16 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
 
     total_final = final_train_count + final_val_count + final_test_count
 
+    if remove_train_duplicates:
+        mode = 'unique_molecules'
+    elif balance_dataset:
+        mode = f'max of {spectra_by_compound} of spectra by compound'
+    else:
+        mode = 'augmented train'
+    
     summary_data = {
-        "mode": "unique_molecules" if remove_train_duplicates else "augmented_train",
+        "mode": mode,
         "split_seed": seed,
-        "test_seed": test_seed,
-        "val_seed": val_seed, # seed fixa para o val e test set
 
         "final_counts": {
             "train": final_train_count,

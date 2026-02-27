@@ -18,7 +18,9 @@ def main(args):
             num_spectra=args.num_spectra,
             frac_valid=args.frac_valid,
             frac_test=args.frac_test,
-            remove_train_duplicates=args.remove_duplicates
+            remove_train_duplicates=args.remove_duplicates,
+            balance_dataset=args.balance_dataset,
+            spectra_by_compound=args.spectra_by_compound
         )
     except Exception as e:
         print(f'Error found: {e}')
@@ -37,6 +39,8 @@ if __name__ == '__main__':
     parser.add_argument('--frac_valid', type=float, default=0.1, help='Fraction of validation data')
     parser.add_argument('--frac_test', type=float, default=0.1, help='Fraction of test data')
     parser.add_argument('--remove_duplicates', action='store_true', help= 'Dont enable data augmentation')
+    parser.add_argument('--balance_dataset', action='store_true', help= 'Limits the number of spectra per compound')
+    parser.add_argument('--spectra_by_compound', type=int, default=4, help='Maximum number of spectra by compound allowed. balance_dataset must be true to use this argument')
 
     args = parser.parse_args()
     main(args)
