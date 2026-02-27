@@ -100,16 +100,18 @@ class TransformerLightning(pl.LightningModule):
         _, optimizer = training_setup(self.model, learning_rate=self.hparams.learning_rate,
                                       weight_decay=self.hparams.weight_decay)
 
-        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(
             optimizer,
-            mode='min',
-            factor=0.5,
-            patience=10,
-            min_lr=1e-7
+            max_lr = self.hparams.learning_rate,
+            total_steps = self.trainer.estimated_stepping_batches,
+            pct_start=0.1,
+            anneal_strategy='cos',
+            div_factor=10.0,
+            final_div_factor=100.0
         )
 
         return {'optimizer': optimizer,
                 'lr_scheduler': {
                     'scheduler': lr_scheduler,
-                    'monitor': 'Loss/Val',
+                    'interval' : 'step',
                     'frequency': 1}}
