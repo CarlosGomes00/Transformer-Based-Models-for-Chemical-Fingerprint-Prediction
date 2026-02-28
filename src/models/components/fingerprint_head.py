@@ -71,6 +71,7 @@ class FingerprintHead(nn.Module):
             layers.append(nn.BatchNorm1d(middle_value))
 
         layers.append(nn.ReLU())
+        layers.append(nn.Dropout(0.1))
         layers.append(nn.Linear(middle_value, fingerprint_dim))
 
         self.net = nn.Sequential(*layers)
@@ -104,6 +105,7 @@ class FingerprintHeadLogits(nn.Module):
             layers.append(nn.BatchNorm1d(middle_value))
 
         layers.append(nn.ReLU())
+        layers.append(nn.Dropout(0.1))
         layers.append(nn.Linear(middle_value, fingerprint_dim))
 
         self.net = nn.Sequential(*layers)

@@ -48,9 +48,9 @@ class EncoderTransformer(nn.Module):
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         if head_type == 'logits':
-            self.fingerprint_head = BasicFingerprintHeadLogits(d_model, fingerprint_dim)
+            self.fingerprint_head = FingerprintHeadLogits(d_model, fingerprint_dim)
         else:
-            self.fingerprint_head = BasicFingerprintHead(d_model, fingerprint_dim)
+            self.fingerprint_head = FingerprintHead(d_model, fingerprint_dim)
 
     def forward(self, mz_batch, int_batch, attention_mask):
 
