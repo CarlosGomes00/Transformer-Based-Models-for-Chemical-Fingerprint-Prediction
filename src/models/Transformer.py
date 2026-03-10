@@ -20,7 +20,7 @@ class Transformer:
                  seed,
                  max_seq_len,
                  vocab_size,
-                 morgan_default_dim,
+                 target_type,
                  d_model,
                  n_head,
                  num_layers,
@@ -36,7 +36,7 @@ class Transformer:
         self.seed = seed
         self.max_seq_len = max_seq_len
         self.vocab_size = vocab_size
-        self.morgan_default_dim = morgan_default_dim
+        self.target_type = target_type
         self.d_model = d_model
         self.n_head = n_head
         self.num_layers = num_layers
@@ -81,7 +81,7 @@ class Transformer:
                                           nhead=self.n_head,
                                           num_layers=self.num_layers,
                                           dropout_rate=self.dropout_rate,
-                                          fingerprint_dim=self.morgan_default_dim,
+                                          target_type=self.target_type,
                                           batch_norm=self.batch_norm,
                                           loss_func=self.loss_func,
                                           pos_weight=self.pos_weight,
@@ -98,6 +98,15 @@ class Transformer:
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
                             filename='transformer-{epoch:02d}-{Loss/Val:.4f}')
             ]
+        
+        #default_callbacks = [
+        #    EarlyStopping(monitor='Tanimoto/Val', patience=20, mode='max'), 
+        #    ModelCheckpoint(monitor='Tanimoto/Val',
+        #                    mode='max',
+        #                    save_top_k=1,
+        #                    dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
+        #                    filename='transformer-{epoch:02d}-{Tanimoto/Val:.4f}')
+        #    ]
 
         logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
@@ -195,7 +204,7 @@ class Transformer:
                                   'recall_weighted': float(recall_weighted),
                                   'f1_macro': float(f1_macro),
                                   'f1_weighted': float(f1_weighted),
-                                  'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
+                                  f'mean_tanimoto_similarity_predicted_vs_true_{self.target_type}': mean_tanimoto}
 
             if save_results:
                 val_dir = REPO_ROOT / 'outputs/validation' / str(self.seed)
@@ -287,7 +296,7 @@ class Transformer:
                         'recall_weighted': float(recall_weighted),
                         'f1_macro': float(f1_macro),
                         'f1_weighted': float(f1_weighted),
-                        'mean_tanimoto_similarity_predicted_vs_true_morganfingerprints': mean_tanimoto}
+                        f'mean_tanimoto_similarity_predicted_vs_true_{self.target_type}': mean_tanimoto}
 
         if save_results:
             eval_dir = REPO_ROOT / 'outputs/eval' / str(self.seed)
@@ -406,7 +415,7 @@ class Transformer:
                 n_head=pl_model.hparams.nhead,
                 num_layers=pl_model.hparams.num_layers,
                 dropout_rate=pl_model.hparams.dropout_rate,
-                morgan_default_dim=pl_model.hparams.fingerprint_dim,
+                target_type=pl_model.hparams.target_type,
                 batch_norm=pl_model.hparams.batch_norm,
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,

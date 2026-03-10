@@ -9,7 +9,7 @@ from src.models.model import EncoderTransformer
 
 class TransformerLightning(pl.LightningModule):
 
-    def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, fingerprint_dim, max_seq_len,
+    def __init__(self, vocab_size, d_model, nhead, num_layers, dropout_rate, target_type, max_seq_len,
                  pos_weight,
                  learning_rate,
                  weight_decay,
@@ -27,7 +27,7 @@ class TransformerLightning(pl.LightningModule):
                                         nhead=nhead,
                                         num_layers=num_layers,
                                         dropout_rate=dropout_rate,
-                                        fingerprint_dim=fingerprint_dim,
+                                        target_type=target_type,
                                         max_seq_len=max_seq_len,
                                         head_type='logits' if loss_func in ('bce_logits', 'focal') else 'sigmoid',
                                         batch_norm=batch_norm)

@@ -12,12 +12,20 @@ class BasicFingerprintHead(nn.Module):
     Parameters:
         d_model : int
             Dimension of input features from the pooling layer
-        fingerprint_dim : int, 2048 by default
-            Size of output fingerprint in bits
+        target_type : str
+            Type of fingerprint to predict ('ECFP4' or 'MACCS')
     """
 
-    def __init__(self, d_model, fingerprint_dim=2048):
+    def __init__(self, d_model, target_type):
         super().__init__()
+        
+        if target_type == 'ECFP4':
+            fingerprint_dim = 2048
+        elif target_type == 'MACCS':
+            fingerprint_dim = 167
+        else:
+            raise ValueError(f"Wrong target type '{target_type}' on the classification head.")
+        
         self.fc = nn.Linear(d_model, fingerprint_dim)
 
     def forward(self, x):
@@ -33,12 +41,20 @@ class BasicFingerprintHeadLogits(nn.Module):
     Parameters:
         d_model : int
             Dimension of input features from the pooling layer
-        fingerprint_dim : int, 2048 by default
-            Size of output fingerprint in bits
+        target_type : str
+            Type of fingerprint to predict ('ECFP4' or 'MACCS')
     """
 
-    def __init__(self, d_model, fingerprint_dim=2048):
+    def __init__(self, d_model, target_type):
         super().__init__()
+
+        if target_type == 'ECFP4':
+            fingerprint_dim = 2048
+        elif target_type == 'MACCS':
+            fingerprint_dim = 167
+        else:
+            raise ValueError(f"Wrong target type '{target_type}' on the classification head.")
+
         self.fc = nn.Linear(d_model, fingerprint_dim)
 
     def forward(self, x):
@@ -55,14 +71,22 @@ class FingerprintHead(nn.Module):
     Parameters:
         d_model : int
             Dimension of input features from the pooling layer
-        fingerprint_dim : int, 2048 by default
-            Size of output fingerprint in bits
+        target_type : str
+            Type of fingerprint to predict ('ECFP4' or 'MACCS')
     """
 
-    def __init__(self, d_model, fingerprint_dim=2048, batch_norm=True):
+    def __init__(self, d_model, target_type, batch_norm=True):
         super().__init__()
 
-        middle_value = int(fingerprint_dim / 2)
+        if target_type == 'ECFP4':
+            fingerprint_dim = 2048
+            middle_value = int(fingerprint_dim / 2)
+        elif target_type == 'MACCS':
+            fingerprint_dim = 167
+            middle_value = d_model
+        else:
+            raise ValueError(f"Wrong target type '{target_type}' on the classification head.")
+
         layers = []
 
         layers.append(nn.Linear(d_model, middle_value))
@@ -89,14 +113,21 @@ class FingerprintHeadLogits(nn.Module):
     Parameters:
         d_model : int
             Dimension of input features from the pooling layer
-        fingerprint_dim : int, 2048 by default
-            Size of output fingerprint in bits
+        target_type : str
+            Type of fingerprint to predict ('ECFP4' or 'MACCS')s
     """
 
-    def __init__(self, d_model, fingerprint_dim=2048, batch_norm=True):
+    def __init__(self, d_model, target_type, batch_norm=True):
         super().__init__()
 
-        middle_value = int(fingerprint_dim / 2)
+        if target_type == 'ECFP4':
+            fingerprint_dim = 2048
+            middle_value = int(fingerprint_dim / 2)
+        elif target_type == 'MACCS':
+            fingerprint_dim = 167
+            middle_value = d_model
+        else:
+            raise ValueError(f"Wrong target type '{target_type}' on the classification head.")
         layers = []
 
         layers.append(nn.Linear(d_model, middle_value))
