@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Tuple
 import matplotlib.pyplot as plt
 import torch
+from deepmol.compound_featurization import MorganFingerprint, MACCSkeysFingerprint
 from rdkit import DataStructs
 from rdkit.DataStructs import ExplicitBitVect
 from rdkit import Chem
@@ -535,3 +536,14 @@ def calculate_tanimoto(y_true : list, y_pred : list):
     
     return np.array(tanimoto_values)
 
+
+def get_deepmol_featurizer(dataset, target_type: str ='ECFP4'):
+
+    if target_type == 'ECFP4':
+        return MorganFingerprint().featurize(dataset)
+    
+    elif target_type == 'MACCS':
+        return MACCSkeysFingerprint().featurize(dataset)
+
+    else:
+        raise ValueError(f'The choosen {target_type} isnt available')
