@@ -29,6 +29,7 @@ def main(args):
             num_workers=args.num_workers,
             num_spectra=args.num_spectra,
             mgf_path=args.mgf_path,
+            target_type=args.target_type,
             max_num_peaks=max_num_peaks,
             mz_vocabs=mz_vocabs)
 
@@ -66,7 +67,8 @@ if __name__ == '__main__':
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+    parser.add_argument('--num_workers', type=int, default=0, help='Number of workers')
+    parser.add_argument('--target_type', type=str, default='ECFP4', help= 'Choose the target type: ECFP4 or MACCS')
 
     parser.add_argument('--checkpoint_path', type=str, required=True, help='Path to the model to be loaded')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold to binning')

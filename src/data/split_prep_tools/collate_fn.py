@@ -24,6 +24,8 @@ class SpectraCollateFn:
             self.padding_token_value = vocab_size
 
         self.fingerprints_df = fingerprints_df.copy()
+        self.fp_cols = [col for col in self.fingerprints_df.columns if col.startswith('fp_')]
+        self.target_size = len(self.fp_cols)
         self.fingerprints_cache = {}
         self._load_precomputed_fingerprints()
 
@@ -33,8 +35,7 @@ class SpectraCollateFn:
             for _, row in self.fingerprints_df.iterrows():
                 spectrum_id = str(row['spectrum_id'])
 
-                fingerprint_cols = [col for col in row.index if col.startswith('fp_')]
-                fingerprint_values = row[fingerprint_cols].values.astype(np.float32)
+                fingerprint_values = row[self.fp_cols].values.astype(np.float32)
 
                 self.fingerprints_cache[spectrum_id] = torch.from_numpy(fingerprint_values)
 
@@ -50,7 +51,7 @@ class SpectraCollateFn:
             return self.fingerprints_cache[spectrum_id]
         else:
             print(f'Fingerprint not found for {spectrum_id}, using zeros')
-            return torch.zeros(2048, dtype=torch.float32)
+            return torch.zeros(self.target_size, dtype=torch.float32)
 
     def __call__(self, batch):
 

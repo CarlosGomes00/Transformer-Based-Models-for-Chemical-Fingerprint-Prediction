@@ -232,6 +232,7 @@ def main(args):
         num_workers=args.num_workers,
         num_spectra=args.num_spectra,
         mgf_path=args.mgf_path,
+        target_type=args.target_type,
         max_num_peaks=max_num_peaks,
         mz_vocabs=mz_vocabs)
 
@@ -267,17 +268,17 @@ def main(args):
     print("BEST THRESHOLDS")
     print("=" * 70)
 
-    print(f"\n🔥 Best F1-macro: threshold = {best_f1_macro['threshold']:.2f}")
+    print(f"\nBest F1-macro: threshold = {best_f1_macro['threshold']:.2f}")
     print(f"   F1-macro:          {best_f1_macro['f1_macro']:.4f}")
     print(f"   Precision-macro:   {best_f1_macro['precision_macro']:.4f}")
     print(f"   Recall-macro:      {best_f1_macro['recall_macro']:.4f}")
 
-    print(f"\n🔥 Best F1-weighted: threshold = {best_f1_weighted['threshold']:.2f}")
+    print(f"\nBest F1-weighted: threshold = {best_f1_weighted['threshold']:.2f}")
     print(f"   F1-weighted:       {best_f1_weighted['f1_weighted']:.4f}")
     print(f"   Precision-weighted:{best_f1_weighted['precision_weighted']:.4f}")
     print(f"   Recall-weighted:   {best_f1_weighted['recall_weighted']:.4f}")
 
-    print(f"\n🔥 Best Tanimoto: threshold = {best_tanimoto['threshold']:.2f}")
+    print(f"\nBest Tanimoto: threshold = {best_tanimoto['threshold']:.2f}")
     print(f"   Tanimoto:          {best_tanimoto['tanimoto']:.4f}")
 
     # 6. Save results
@@ -391,6 +392,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
+    
+    parser.add_argument('--target_type', type=str, default='ECFP4', help= 'Choose the target type: ECFP4 or MACCS')
 
     args = parser.parse_args()
     main(args)

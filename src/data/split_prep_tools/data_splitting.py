@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 from deepmol.splitters import MultiTaskStratifiedSplitter
 from pathlib import Path
-from deepmol.compound_featurization import MorganFingerprint
+from deepmol.compound_featurization import MorganFingerprint, MACCSkeysFingerprint
 from deepmol.datasets import SmilesDataset
 from src.data.mgf_tools.mgf_get import mgf_get_spectra, mgf_get_smiles
 from src.utils import (generate_data_stats, calculate_max_num_peaks, mgf_deconvoluter, calculate_mz_vocabs,
-                       canonicalize_smiles)
+                       canonicalize_smiles, get_deepmol_featurizer)
 from src.config import mgf_path, min_num_peaks, noise_rmv_threshold, mass_error
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -67,6 +67,7 @@ def clean_splits(splits: dict, smiles_df: pd.DataFrame, remove_train_duplicates:
 
 
 def make_split(dataset, seed, output_dir,
+               target_type,
                frac_train: float = 0.8,
                frac_valid: float = 0.1,
                frac_test: float = 0.1):
@@ -169,7 +170,8 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
                          frac_test: float = 0.1,
                          remove_train_duplicates: bool = False,
                          balance_dataset: bool = False,
-                         spectra_by_compound:int = 4):
+                         spectra_by_compound:int = 4,
+                         target_type: str = 'ECFP4'):
 
     """
     Function that splits the data and calculates some of the essential parameters
@@ -195,6 +197,8 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
             If true, limits the number of spectra per compound
         spectra_by_compound : int
             Maximum number of spectra by compound allowed. balance_dataset must be true to use this argument
+        target_type : str
+            Target type: ECFP4 or MACCS
     """
 
     output_dir = Path(output_dir)
@@ -253,7 +257,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     ids_list = filtered_smiles['spectrum_id'].tolist()
 
     dataset = SmilesDataset(smiles=smiles_list, ids=ids_list)
-    dataset = MorganFingerprint().featurize(dataset)
+    dataset = get_deepmol_featurizer(dataset=dataset, target_type=target_type) 
     dataset._y = dataset.X
 
     print('\n4. Data Splitting')
@@ -278,7 +282,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
 
     fp_df = pd.DataFrame(dataset.X, columns=[f'fp_{i}' for i in range(dataset.X.shape[1])])
     fp_df['spectrum_id'] = dataset.ids
-    fingerprints_pkl = output_dir / str(seed) / 'fingerprints.pkl'
+    fingerprints_pkl = output_dir / str(seed) / f'{target_type}_fingerprints.pkl'
     fp_df.to_pickle(fingerprints_pkl)
 
     print('\n5. Generating Split Statistics')
@@ -313,6 +317,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
     
     summary_data = {
         "mode": mode,
+        "target": target_type,
         "split_seed": seed,
 
         "final_counts": {
@@ -336,7 +341,7 @@ def preprocess_and_split(mgf_path, seed, output_dir=REPO_ROOT / "src/data/artifa
         json.dump(summary_data, f, indent=4)
 
     if split_pkl.exists() and fingerprints_pkl.exists():
-        print(f'Split IDs and Fingerprints saved')
+        print(f'Split IDs and {target_type} Fingerprints saved')
     else:
         print('Files not found')
 

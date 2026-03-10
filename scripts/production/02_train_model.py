@@ -29,6 +29,7 @@ def main(args):
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             num_spectra=args.num_spectra,
+            target_type=args.target_type,
             mgf_path=args.mgf_path,
             max_num_peaks=max_num_peaks,
             mz_vocabs=mz_vocabs)
@@ -36,7 +37,7 @@ def main(args):
         model = Transformer(seed=args.seed,
                             max_seq_len=max_seq_len,
                             vocab_size=vocab_size,
-                            morgan_default_dim=args.fingerprint_dim,
+                            target_type=args.target_type,
                             d_model=args.d_model,
                             n_head=args.n_head,
                             num_layers=args.num_layers,
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--fast_dev_run', action='store_true', help='Runs the pipeline with only one '
                         'training and validation batch ')
 
-    parser.add_argument('--fingerprint_dim', type=int, default=2048, help='Dimension of the fingerprints')
+    parser.add_argument('--target_type', type=str, default='ECFP4', help='Choose the target type: ECFP4 or MACCS')
     parser.add_argument('--d_model', type=int, default=512)
     parser.add_argument('--n_head', type=int, default=8)
     parser.add_argument('--num_layers', type=int, default=4)

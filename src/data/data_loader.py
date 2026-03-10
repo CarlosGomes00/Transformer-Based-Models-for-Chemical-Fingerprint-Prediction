@@ -29,7 +29,7 @@ class SpectraDataset(Dataset):
         return self.data[idx]
 
 
-def data_loader(seed, batch_size, num_workers, num_spectra: int = None,
+def data_loader(seed, batch_size, num_workers, target_type, num_spectra: int = None,
                 mgf_path: str = mgf_path, max_num_peaks: int = None, mz_vocabs=None):
 
     mgf_spectra = mgf_get_spectra(mgf_path, num_spectra)
@@ -39,7 +39,7 @@ def data_loader(seed, batch_size, num_workers, num_spectra: int = None,
 
     artifacts_dir = REPO_ROOT / "src/data/artifacts"
     split_pkl = artifacts_dir / str(seed) / 'split_ids.pkl'
-    fingerprints_pkl = artifacts_dir / str(seed) / 'fingerprints.pkl'
+    fingerprints_pkl = artifacts_dir / str(seed) / f'{target_type}_fingerprints.pkl'
 
     if not split_pkl.exists():
         raise FileNotFoundError("Split file not found")

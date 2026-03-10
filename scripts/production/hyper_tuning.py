@@ -21,14 +21,13 @@ def main(args):
             'seed': args.seed,
             'max_seq_len': pipeline_config['max_seq_len'],
             'vocab_size': pipeline_config['vocab_size'],
-            'morgan_default_dim': 2048
              }
 
     loaders = data_loader(seed=args.seed, mgf_path=args.mgf_path, batch_size=args.batch_size,
                           num_workers=args.num_workers, max_num_peaks=pipeline_config['max_num_peaks'],
-                          mz_vocabs=pipeline_config['mz_vocabs'])
+                          mz_vocabs=pipeline_config['mz_vocabs'], target_type=args.target_type)
 
-    func = lambda trial: objective(trial, hyper_params, loaders)
+    func = lambda trial: objective(trial, hyper_params, loaders, args.target_type)
     study = optuna.create_study(direction='maximize')
     study.optimize(func, n_trials=args.n_trials)
 
@@ -41,12 +40,12 @@ def main(args):
         json.dump(study.best_params, f, indent=4)
 
     plot1 = optuna.visualization.plot_optimization_history(study)
-    plot2 = optuna.visualization.plot_slice(study, params=['dropout_rate', 'pos_weight', 'learning_rate', 'weight_decay'])
+    plot2 = optuna.visualization.plot_slice(study, params=['dropout_rate', 'learning_rate', 'pos_weight', 'weight_decay'])
     plot3 = optuna.visualization.plot_param_importances(study)
 
-    plot1.write_image(artifacts_dir / 'optimization_history.png')
-    plot2.write_image(artifacts_dir / 'plot_slice.png')
-    plot3.write_image(artifacts_dir / 'plot_param_importances.png')
+    plot1.write_image(artifacts_dir / 'optimization_history.html')
+    plot2.write_image(artifacts_dir / 'plot_slice.html')
+    plot3.write_image(artifacts_dir / 'plot_param_importances.html')
 
     print(f'Best hyperparams saved in: {best_hyperparams_path}')
     print(f'Plots saved in: {artifacts_dir}')
@@ -59,9 +58,11 @@ if __name__ == '__main__':
     parser.add_argument('--mgf_path', type=str, default=Path(mgf_path), help='Path to the .mgf file')
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
-    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
-    parser.add_argument('--n_trials', type=int, default=50, help='Number of trials')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
+    parser.add_argument('--num_workers', type=int, default=0, help='Number of workers')
+    parser.add_argument('--n_trials', type=int, default=30, help='Number of trials')
+    parser.add_argument('--target_type', type=str, default='ECFP4', help='Choose the target type: ECFP4 or MACCS')
+
 
     args = parser.parse_args()
     main(args)
