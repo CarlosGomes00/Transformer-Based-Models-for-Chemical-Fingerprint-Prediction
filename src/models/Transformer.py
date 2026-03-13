@@ -126,7 +126,7 @@ class Transformer:
         self.is_fitted = True
         return self
 
-    def validate(self, data_loader, split_name='val', threshold=0.5, save_results=True):
+    def validate(self, data_loader, split_name='val', threshold=0.5, save_metrics=True, save_preds=True):
 
         """
             Calculates evaluation metrics on any dataset split (train/val/test)
@@ -138,12 +138,19 @@ class Transformer:
                     Threshold to binning
                 split_name : str
                     Name of the split ('val', 'test', 'train') to identify the file
-                save_results : bool
-                    If true (default), saves the results
+                save_metrics : bool
+                    If true (default), saves the metrics in a json
+                save_preds : bool
+                    If true (default), saves the predictions in a csv
                 """
 
         if not self.is_fitted:
             raise ValueError("Model must be fitted before scoring")
+        
+        
+        if save_metrics or save_preds:
+            val_dir = REPO_ROOT / 'outputs/validation' / str(self.seed)
+            val_dir.mkdir(parents=True, exist_ok=True)
 
         model = TransformerLightning.load_from_checkpoint(self.best_model_path)
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -151,7 +158,7 @@ class Transformer:
         model.eval()
         model.to(device)
 
-        preds, targets = [], []
+        preds, targets, spectrum_ids = [], []
 
         with (torch.no_grad()):
             for (mz_batch,
@@ -165,6 +172,7 @@ class Transformer:
                 logits = model(mz_batch, int_batch, attention_mask_batch)
                 preds.append(logits.cpu())
                 targets.append(targets_batch)
+                spectrum_ids.extend(batch_spectrum_ids)
 
             pred_float = torch.cat(preds)
             targets = torch.cat(targets)
@@ -174,6 +182,7 @@ class Transformer:
                 pred_probs = torch.sigmoid(pred_float)
                 pred_bins = (pred_probs > threshold).int()
             elif loss_func == 'bce':
+                pred_probs = pred_float
                 pred_bins = (pred_float > threshold).int()
             else:
                 raise ValueError(f'Binarisation logic not defined for the loss function: {loss_func}')
@@ -206,109 +215,34 @@ class Transformer:
                                   'f1_weighted': float(f1_weighted),
                                   f'mean_tanimoto_similarity_predicted_vs_true_{self.target_type}': mean_tanimoto}
 
-            if save_results:
-                val_dir = REPO_ROOT / 'outputs/validation' / str(self.seed)
-                val_dir.mkdir(parents=True, exist_ok=True)
-
+            if save_metrics:
                 metrics_path = val_dir / f"metrics_{split_name}.json"
                 with open(metrics_path, 'w') as f:
                     json.dump(validation_results, f, indent=2)
 
                 print(f'Metrics saved to {metrics_path}')
 
+            if save_preds and split_name == 'test':
+                import pandas as pd
+
+                bins_list = y_pred.tolist()
+                probs_list = pred_probs.tolist()
+
+                df_preds_bins = pd.DataFrame({'Spectrum_ID': spectrum_ids,
+                                        f'Predicted Bins with threshold {threshold}': bins_list})
+                
+                df_preds_floats = pd.DataFrame({'Spectrum_ID': spectrum_ids,
+                                        f'Predicted values': probs_list})
+                
+                csv_path_bins = val_dir / f'bins_predictions_{split_name}.csv'
+                csv_path_floats =  val_dir / f'floats_predictions_{split_name}.csv'
+
+                df_preds_bins.to_csv(csv_path_bins, index=False)
+                df_preds_floats.to_csv(csv_path_floats, index=False)
+                print(f'Predictions saved to {val_dir}')
+
             return validation_results
 
-    def eval(self, test_loader, threshold=0.5, save_results=True):
-
-        """
-        Calculates evaluation metrics on the test set
-
-        Parameters:
-            test_loader : pytorch DataLoader
-                Test data loader
-            threshold : float
-                Threshold to binning
-            save_results : bool
-                If true (default), saves the results
-        """
-
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted before scoring")
-
-        model = TransformerLightning.load_from_checkpoint(self.best_model_path)
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        model.eval()
-        model.to(device)
-
-        preds, targets = [], []
-
-        with (torch.no_grad()):
-            for (mz_batch,
-                 int_batch,
-                 attention_mask_batch,
-                 batch_spectrum_ids,
-                 targets_batch) in test_loader:
-                # Passar os batches para device, seja ele cuda ou cpu
-                mz_batch = mz_batch.to(device)
-                int_batch = int_batch.to(device)
-                attention_mask_batch = attention_mask_batch.to(device)
-                # precursor_mask_batch = precursor_mask_batch.to(device)
-
-                logits = model(mz_batch, int_batch, attention_mask_batch)
-                preds.append(logits.cpu())
-                targets.append(targets_batch)
-
-        pred_float = torch.cat(preds)
-        targets = torch.cat(targets)
-        loss_func = model.hparams.loss_func
-
-        if loss_func in ('bce_logits', 'focal'):
-            pred_probs = torch.sigmoid(pred_float)
-            pred_bins = (pred_probs > threshold).int()
-        elif loss_func == 'bce':
-            pred_bins = (pred_float > threshold).int()
-        else:
-            raise ValueError(f'Binarisation logic not defined for the loss function: {loss_func}')
-
-        y_true = targets.numpy()
-        y_pred = pred_bins.numpy()
-
-        precision_macro = precision_score(y_true, y_pred, average='macro')
-        precision_weighted = precision_score(y_true, y_pred, average='weighted')
-
-        recall_macro = recall_score(y_true, y_pred, average='macro')
-        recall_weighted = recall_score(y_true, y_pred, average='weighted')
-
-        f1_macro = f1_score(y_true, y_pred, average='macro')
-        f1_weighted = f1_score(y_true, y_pred, average='weighted')
-
-        true_bvs = [tensor_to_bitvect(fp) for fp in targets]
-        pred_bvs = [tensor_to_bitvect(fp) for fp in pred_bins]
-
-        tanimoto_values = [DataStructs.TanimotoSimilarity(a, b) for a, b in zip(true_bvs, pred_bvs)]
-        mean_tanimoto = float(np.mean(tanimoto_values))
-
-        eval_results = {'n_samples': int(targets.shape[0]),
-                        'precision_macro': float(precision_macro),
-                        'precision_weighted': float(precision_weighted),
-                        'recall_macro': float(recall_macro),
-                        'recall_weighted': float(recall_weighted),
-                        'f1_macro': float(f1_macro),
-                        'f1_weighted': float(f1_weighted),
-                        f'mean_tanimoto_similarity_predicted_vs_true_{self.target_type}': mean_tanimoto}
-
-        if save_results:
-            eval_dir = REPO_ROOT / 'outputs/eval' / str(self.seed)
-            eval_dir.mkdir(parents=True, exist_ok=True)
-
-            metrics_path = eval_dir / "metrics.json"
-            with open(metrics_path, 'w') as f:
-                json.dump(eval_results, f, indent=2)
-
-            print(f'Metrics saved to {metrics_path}')
-
-        return eval_results
 
     def predict(self, data_loader, return_probabilities=False, threshold=0.5, save_results=True):
 
@@ -386,11 +320,6 @@ class Transformer:
                 pd.DataFrame(result).to_csv('predictions_bin.csv', index=False)
             return result
 
-    def score(self, y_true):
-        """
-        Analisar as previsões contra os targets reais
-        """
-        return
 
     @classmethod
     def load_model(cls, checkpoint_path, seed):
