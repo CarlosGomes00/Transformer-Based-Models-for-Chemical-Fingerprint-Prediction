@@ -38,18 +38,18 @@ def main(args):
 
         print('Performing the evaluation on the train set!')
         results_train = model.validate(data_loader=loaders['train'], split_name='train', threshold=args.threshold,
-                                       save_results=args.save_results)
+                                       save_metrics=args.save_metrics, save_preds=args.save_preds)
         print(json.dumps(results_train, indent=4))
 
         print('Performing the evaluation on the validation set!')
         results_val = model.validate(data_loader=loaders['val'], split_name='val', threshold=args.threshold,
-                                     save_results=args.save_results)
+                                     save_metrics=args.save_metrics, save_preds=args.save_preds)
         print(json.dumps(results_val, indent=4))
 
 
         print('Performing the evaluation on the test set!')
         results_test = model.validate(data_loader=loaders['test'], split_name='test', threshold=args.threshold,
-                                      save_results=args.save_results)
+                                      save_metrics=args.save_metrics, save_preds=args.save_preds)
         print(json.dumps(results_test, indent=4))
 
     except Exception as e:
@@ -72,8 +72,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--checkpoint_path', type=str, required=True, help='Path to the model to be loaded')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold to binning')
-    parser.add_argument('--no_save', dest='save_results', action='store_false',
-                        help='Deactivates the saving of the results')
+    parser.add_argument('--no_save_metrics', dest='save_metrics', action='store_false',
+                        help='Deactivates the saving of the metrics')
+    parser.add_argument('--no_save_preds', dest='save_preds', action='store_false',
+                        help='Deactivates the saving of the predictions')
 
     args = parser.parse_args()
     main(args)

@@ -90,23 +90,23 @@ class Transformer:
                                           weight_decay=self.weight_decay,
                                           learning_rate=self.learning_rate)
 
-        #default_callbacks = [
-        #    EarlyStopping(monitor='Loss/Val', patience=20),
-        #    ModelCheckpoint(monitor='Loss/Val',
-        #                    mode='min',
-        #                    save_top_k=1,
-        #                    dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-        #                    filename='transformer-{epoch:02d}-{Loss/Val:.4f}')
-        #    ]
-        
         default_callbacks = [
-            EarlyStopping(monitor='Tanimoto/Val', patience=25, mode='max'), 
-            ModelCheckpoint(monitor='Tanimoto/Val',
-                            mode='max',
+            EarlyStopping(monitor='Loss/Val', patience=20),
+            ModelCheckpoint(monitor='Loss/Val',
+                            mode='min',
                             save_top_k=1,
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                            filename='transformer-{epoch:02d}-{Tanimoto/Val:.4f}')
+                            filename='transformer-{epoch:02d}-{Loss/Val:.4f}')
             ]
+        
+        #default_callbacks = [
+        #    EarlyStopping(monitor='Tanimoto/Val', patience=25, mode='max'), 
+        #    ModelCheckpoint(monitor='Tanimoto/Val',
+        #                    mode='max',
+        #                    save_top_k=1,
+        #                    dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
+        #                    filename='transformer-{epoch:02d}-{Tanimoto/Val:.4f}')
+        #    ]
 
         logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
@@ -158,7 +158,7 @@ class Transformer:
         model.eval()
         model.to(device)
 
-        preds, targets, spectrum_ids = [], []
+        preds, targets, spectrum_ids = [], [], []
 
         with (torch.no_grad()):
             for (mz_batch,
