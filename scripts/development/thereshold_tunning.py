@@ -154,7 +154,7 @@ def plot_threshold_sweep(results_df, output_dir):
     axes[0, 0].set_ylabel('F1 Score', fontsize=12)
     axes[0, 0].legend(fontsize=10)
     axes[0, 0].grid(True, alpha=0.3)
-    axes[0, 0].set_title('F1 Scores vs Threshold', fontsize=13, fontweight='bold')
+    axes[0, 0].set_title('F1 Scores value based on the Threshold', fontsize=13, fontweight='bold')
 
     # Precision
     axes[0, 1].plot(results_df['threshold'], results_df['precision_macro'], 'o-', label='Precision-macro', linewidth=2)
@@ -164,7 +164,7 @@ def plot_threshold_sweep(results_df, output_dir):
     axes[0, 1].set_ylabel('Precision', fontsize=12)
     axes[0, 1].legend(fontsize=10)
     axes[0, 1].grid(True, alpha=0.3)
-    axes[0, 1].set_title('Precision vs Threshold', fontsize=13, fontweight='bold')
+    axes[0, 1].set_title('Precision value based on the Threshold', fontsize=13, fontweight='bold')
 
     # Recall
     axes[1, 0].plot(results_df['threshold'], results_df['recall_macro'], 'o-', label='Recall-macro', linewidth=2)
@@ -173,14 +173,14 @@ def plot_threshold_sweep(results_df, output_dir):
     axes[1, 0].set_ylabel('Recall', fontsize=12)
     axes[1, 0].legend(fontsize=10)
     axes[1, 0].grid(True, alpha=0.3)
-    axes[1, 0].set_title('Recall vs Threshold', fontsize=13, fontweight='bold')
+    axes[1, 0].set_title('Recall value based on the Threshold', fontsize=13, fontweight='bold')
 
     # Tanimoto
     axes[1, 1].plot(results_df['threshold'], results_df['tanimoto'], 'o-', color='green', linewidth=2)
     axes[1, 1].set_xlabel('Threshold', fontsize=12)
     axes[1, 1].set_ylabel('Tanimoto Similarity', fontsize=12)
     axes[1, 1].grid(True, alpha=0.3)
-    axes[1, 1].set_title('Tanimoto vs Threshold', fontsize=13, fontweight='bold')
+    axes[1, 1].set_title('Tanimoto coefficient value based on the Threshold', fontsize=13, fontweight='bold')
 
     plt.tight_layout()
 
@@ -206,10 +206,9 @@ def main(args):
     pl_model = model_wrapper.model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    print(f"✓ Model loaded from: {args.checkpoint_path}")
-    print(f"✓ Loss function: {pl_model.hparams.loss_func}")
-    print(f"✓ pos_weight: {pl_model.hparams.pos_weight}")
-    print(f"✓ Device: {device}")
+    print(f"Model loaded from: {args.checkpoint_path}")
+    print(f"Loss function: {pl_model.hparams.loss_func}")
+    print(f"Device: {device}")
 
     try:
         artifacts_dir = Path(args.artifacts_dir) / str(args.seed)
@@ -309,17 +308,18 @@ def main(args):
     with open(json_path, 'w') as f:
         json.dump(best_thresholds, f, indent=2)
 
-    print(f"✓ Best thresholds saved: {json_path}")
+    print(f"Best thresholds saved: {json_path}")
 
     # 7. Plot
     print("\n6. Generating plots...")
     plot_threshold_sweep(results_df, output_dir)
 
     print("\n" + "=" * 70)
-    print("✓ THRESHOLD OPTIMIZATION COMPLETE!")
+    print("THRESHOLD OPTIMIZATION COMPLETE!")
     print("=" * 70)
-    print(f"\nRecommended threshold for evaluation: {best_f1_macro['threshold']:.2f}")
-    print(f"(Optimized for F1-macro)")
+    print(f"\nRecommended threshold for evaluation (Optimized for F1-macro): {best_f1_macro['threshold']:.2f}")
+    print(f"\nRecommended threshold for evaluation (Optimized for Tanimoto): {best_tanimoto['threshold']:.2f}")
+
 
 
 if __name__ == "__main__":
