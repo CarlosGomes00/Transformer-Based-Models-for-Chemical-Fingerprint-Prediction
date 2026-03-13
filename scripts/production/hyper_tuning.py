@@ -43,9 +43,9 @@ def main(args):
     plot2 = optuna.visualization.plot_slice(study, params=['dropout_rate', 'learning_rate', 'pos_weight', 'weight_decay'])
     plot3 = optuna.visualization.plot_param_importances(study)
 
-    plot1.write_image(artifacts_dir / 'optimization_history.html')
-    plot2.write_image(artifacts_dir / 'plot_slice.html')
-    plot3.write_image(artifacts_dir / 'plot_param_importances.html')
+    plot1.write_html(artifacts_dir / 'optimization_history.html')
+    plot2.write_html(artifacts_dir / 'plot_slice.html')
+    plot3.write_html(artifacts_dir / 'plot_param_importances.html')
 
     print(f'Best hyperparams saved in: {best_hyperparams_path}')
     print(f'Plots saved in: {artifacts_dir}')
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--artifacts_dir', type=str, default=REPO_ROOT / 'src/data/artifacts',
                         help='Artifacts directory')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-    parser.add_argument('--num_workers', type=int, default=0, help='Number of workers')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
     parser.add_argument('--n_trials', type=int, default=30, help='Number of trials')
     parser.add_argument('--target_type', type=str, default='ECFP4', help='Choose the target type: ECFP4 or MACCS')
 
