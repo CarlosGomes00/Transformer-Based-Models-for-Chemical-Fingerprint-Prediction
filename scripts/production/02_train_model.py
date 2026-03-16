@@ -51,7 +51,7 @@ def main(args):
                             weight_decay=args.weight_decay)
 
         model_fitted = model.fit(train_loader=loaders['train'], val_loader=loaders['val'], max_epochs=args.max_epochs,
-                                 fast_dev_run=args.fast_dev_run)
+                                 fast_dev_run=args.fast_dev_run, monitor=args.monitor)
 
     except Exception as e:
         print(f'Error found: {e}')
@@ -69,6 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
     parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
     parser.add_argument('--max_epochs', type=int, default=100, help='Number of epochs')
+    parser.add_argument('--monitor', type=str, default='Loss/val', help='Metric to use as monitor in the training ("Loss/Val" or "Tanimoto/Val)')
 
     parser.add_argument('--fast_dev_run', action='store_true', help='Runs the pipeline with only one '
                         'training and validation batch ')

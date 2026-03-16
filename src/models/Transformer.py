@@ -54,7 +54,7 @@ class Transformer:
         self.best_model_path = None
         self.is_fitted = False
 
-    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None):
+    def fit(self, train_loader, val_loader, max_epochs=100, fast_dev_run=False, callbacks=None, monitor='Loss/Val'):
         """
         Train the transformer model
 
@@ -90,23 +90,22 @@ class Transformer:
                                           weight_decay=self.weight_decay,
                                           learning_rate=self.learning_rate)
 
+        if monitor == 'Loss/Val':
+            monitor_mode = 'min'
+        elif monitor == 'Tanimoto/Val':
+            monitor_mode = 'max'
+        else:
+            raise ValueError(f'Monitor {monitor} not supported."Loss Val" and "Tanimoto/Val" available')
+        
         default_callbacks = [
-            EarlyStopping(monitor='Loss/Val', patience=20),
-            ModelCheckpoint(monitor='Loss/Val',
-                            mode='min',
+            EarlyStopping(monitor=monitor, patience=20, mode=monitor_mode), 
+            ModelCheckpoint(monitor=monitor,
+                            mode=monitor_mode,
                             save_top_k=1,
                             dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-                            filename='transformer-{epoch:02d}-{Loss/Val:.4f}')
+                            filename='transformer-{epoch:02d}-{' + monitor + ':.4f}')
             ]
-        
-        #default_callbacks = [
-        #    EarlyStopping(monitor='Tanimoto/Val', patience=25, mode='max'), 
-        #    ModelCheckpoint(monitor='Tanimoto/Val',
-        #                    mode='max',
-        #                    save_top_k=1,
-        #                    dirpath=REPO_ROOT / f'outputs/checkpoints/{self.seed}',
-        #                    filename='transformer-{epoch:02d}-{Tanimoto/Val:.4f}')
-        #    ]
+
 
         logger = TensorBoardLogger(save_dir=REPO_ROOT / 'outputs/logs', name=f'{self.seed}_logs')
 
@@ -244,12 +243,10 @@ class Transformer:
             return validation_results
 
 
-    def predict(self, data_loader, return_probabilities=False, threshold=0.5, save_results=True):
+    def predict(self, data_loader, return_probabilities=False, threshold=0.5, save_preds=True):
 
         """
         Make predictions on new data
-
-        Model must be fitted to the new data
 
         Parameters:
             data_loader
@@ -258,7 +255,7 @@ class Transformer:
                 If true, return raw probabilities
             threshold : float
                 Threshold to binning
-            save_results : bool
+            save_preds : bool
                 If true (default), prediction results are saved
 
         Returns:
@@ -308,7 +305,7 @@ class Transformer:
             result = pred_probabilities.numpy()
             print(f"   Probability range: [{result.min():.4f}, {result.max():.4f}]")
 
-            if save_results:
+            if save_preds:
                 pd.DataFrame(result).to_csv('predictions.csv', index=False)
             return result
 
@@ -316,13 +313,13 @@ class Transformer:
             pred_binary = (pred_probabilities > threshold).int()
             result = pred_binary.numpy()
 
-            if save_results:
+            if save_preds:
                 pd.DataFrame(result).to_csv('predictions_bin.csv', index=False)
             return result
 
 
     @classmethod
-    def load_model(cls, checkpoint_path, seed):
+    def load_model(cls, checkpoint_path, seed, target_type):
         """
         Load a model from a checkpoint and return a ready to use Transformer instance
 
@@ -344,7 +341,7 @@ class Transformer:
                 n_head=pl_model.hparams.nhead,
                 num_layers=pl_model.hparams.num_layers,
                 dropout_rate=pl_model.hparams.dropout_rate,
-                target_type=pl_model.hparams.target_type,
+                target_type=pl_model.target_type,
                 batch_norm=pl_model.hparams.batch_norm,
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,
