@@ -319,7 +319,7 @@ class Transformer:
 
 
     @classmethod
-    def load_model(cls, checkpoint_path, seed, target_type):
+    def load_model(cls, checkpoint_path, seed):
         """
         Load a model from a checkpoint and return a ready to use Transformer instance
 
@@ -341,7 +341,7 @@ class Transformer:
                 n_head=pl_model.hparams.nhead,
                 num_layers=pl_model.hparams.num_layers,
                 dropout_rate=pl_model.hparams.dropout_rate,
-                target_type=pl_model.target_type,
+                target_type=pl_model.hparams.target_type,
                 batch_norm=pl_model.hparams.batch_norm,
                 loss_func=pl_model.hparams.loss_func,
                 pos_weight=pl_model.hparams.pos_weight,
