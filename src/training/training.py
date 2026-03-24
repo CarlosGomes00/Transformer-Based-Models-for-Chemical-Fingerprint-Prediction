@@ -98,11 +98,12 @@ def train_step(model, batch, criterion, optimizer):
 
     mz_batch, int_batch, attention_mask_batch, batch_spectrum_ids, precursor_mask_batch, targets_batch = batch
 
+    optimizer.zero_grad()
+    
     outputs = model(mz_batch, int_batch, attention_mask_batch)
 
     loss = criterion(outputs, targets_batch)
 
-    optimizer.zero_grad()
     loss.backward()
     optimizer.step()
 
