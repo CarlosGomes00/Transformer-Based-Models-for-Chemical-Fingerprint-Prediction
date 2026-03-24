@@ -98,7 +98,7 @@ class Transformer:
             raise ValueError(f'Monitor {monitor} not supported."Loss Val" and "Tanimoto/Val" available')
         
         default_callbacks = [
-            EarlyStopping(monitor=monitor, patience=20, mode=monitor_mode, min_delta= 0.001 if monitor == 'Tanimoto/Val' else 0.0005), 
+            EarlyStopping(monitor=monitor, patience=10 if monitor == 'Tanimoto/Val' else 20, mode=monitor_mode, min_delta= 0.002 if monitor == 'Tanimoto/Val' else 0.0005), 
             ModelCheckpoint(monitor=monitor,
                             mode=monitor_mode,
                             save_top_k=1,
