@@ -19,12 +19,12 @@ To achieve the project objectives, a data engineering workflow was implemented t
 **Pre-processing Workflow:** Developed to filter, remove noise, and tokenise the raw spectra so that they could be processed by the models.
 
 
-<img src="results/spectra_processing.png" alt="Overview of the data processing pipeline" width="500"/>
+<img src="imgs/spectra_processing.png" alt="Overview of the data processing pipeline" width="500"/>
 
 
 These sequences were then used to train two Transformer-based models, enabling the prediction of two different structural representations of compounds.
 
-<img src="results/arquitetura.png" alt="Transformer Model Architecture" width="300"/>
+<img src="imgs/arquitetura.png" alt="Transformer Model Architecture" width="300"/>
 
 ## 📊 Experimental Results & Benchmarks
 
