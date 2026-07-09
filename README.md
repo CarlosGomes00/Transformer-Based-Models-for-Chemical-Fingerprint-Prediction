@@ -1,25 +1,89 @@
 # Transformer-Based-Models-for-Chemical-Fingerprint-Prediction
 
-This repository contains the code developed for my master's thesis in Bioinformatics, focused on predicting untargeted molecular fingerprints from mass spectrometry data using Transformers-based models.
+<!-- Tech Stack Badges (Estilo Shields.io) -->
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Learning-ee4c2c.svg)
+![TensorBoard](https://img.shields.io/badge/TensorBoard-Logs%20%26%20Metrics-orange.svg)
+![CLI](https://img.shields.io/badge/Interface-CLI%20%2F%20Automation-white.svg)
 
-## Features
-* **End-to-End Machine Learning Pipeline:** Modular scripts for pre-processing, training, and evaluation.
-* **Spectral Data Processing:** Tools for reading, filtering, and processing mass spectrometry files (`.mgf`).
-* **Fingerprint generation:** Generation of Morgan Fingerprints from SMILES.
+This repository contains the framework developed for my master's thesis in Bioinformatics at the University of Minho, focused on predicting untargeted molecular fingerprints from mass spectrometry data using Transformer-based models.
 
-## Repository structure
+The purpose of this dissertation was to build and evaluate transformer models able to translate MS/MS spectra into useful molecular representations, namely ECFPs and MACCS fingerprints.
+
+## 🧬 Framework & Pipeline Architecture
+
+To achieve the project objectives, a data engineering workflow was implemented to process raw spectral data into tensors:
+
+**Spectral Data Utilities:** A set of utilities was implemented to manipulate and extract information from .mgf files.
+
+**Pre-processing Workflow:** Developed to filter, remove noise, and tokenise the raw spectra so that they could be processed by the models.
+
+
+<img src="results/spectra_processing.png" alt="Overview of the data processing pipeline" width="500"/>
+
+
+These sequences were then used to train two Transformer-based models, enabling the prediction of two different structural representations of compounds.
+
+<img src="results/arquitetura.png" alt="Transformer Model Architecture" width="300"/>
+
+## 📊 Experimental Results & Benchmarks
+
+The experimental results demonstrated that the model trained to predict MACCS fingerprints achieved robust performance, obtaining an average Tanimoto score of 0.63.
+
+In contrast, predicting ECFPs proved to be a far more complex challenge. Unlike MACCS fingerprints, which function as a fixed dictionary, ECFPs are generated through an iterative hashing process, in which specific bits do not always correspond to identical physical substructures in different compounds. However, despite the complexity of the task, the ECFPs model achieved a mean Tanimoto score of 0.33, a result that is highly competitive and at the level of current state-of-the-art for similar tasks.
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### **MACCS Keys Model Performance**
+
+| Metrics | Test Set |
+| :--- | :---: |
+| mPrecision | 0.46 |
+| wPrecision | 0.70 |
+| mRecall | 0.46 |
+| wRecall | 0.83 |
+| mF1 | 0.44 |
+| wF1 | 0.75 |
+| **Tanimoto (Jaccard Index)** | **0.63** |
+
+
+</td>
+<td valign="top" width="50%">
+
+### **ECFPs Keys Model Performance**
+
+| Metrics | Test Set |
+| :--- |:--------:|
+| mPrecision |   0.31   |
+| wPrecision |   0.48   |
+| mRecall |   0.19   |
+| wRecall |   0.43   |
+| mF1 |   0.22   |
+| wF1 |   0.44   |
+| **Tanimoto (Jaccard Index)** | **0.33** |
+
+</td>
+</tr>
+</table>
+
+
+## 📂 Repository Structure
+
+
 The structure of the repository has been organized in a modular way to make it easier to navigate and understand the code.
 
 ```    
 └── Transformer-Based-Models-for-Chemical-Fingerprint-Prediction/
     ├── env.yml
     │
-    ├── notebooks/ # Notebooks for data exploration and tutorials
-    │
-    ├── outputs/ # Model logs, checkpoints and evaluations
+    ├── notebooks/     │
     │   
     ├── scripts/
-    │   └── production/ # Main pipeline scripts
+    │   ├── production/ 
+    │   └──development/
+    │    
     └── src/ # Project source code
         ├── data/ 
         ├── models/ 
@@ -27,72 +91,6 @@ The structure of the repository has been organized in a modular way to make it e
         ├── config.py 
         └── utils.py
 ```
-
-To ensure that all the project's dependencies are installed correctly, we recommend using a Conda environment. 
-You can easily create the environment with the project's dependencies from the env.yml file included in this repository.
-
-## Steps to set up the environment:
-
-1. Make sure you have Conda installed. If you don't have Conda installed, download and install Miniconda or Anaconda.
-
-2. Clone the repository to your local machine: If you haven't cloned the repository yet, use the following command to clone it:
-
-```
-git clone https://github.com/CarlosGomes00/Transformer-Based-Models-for-Chemical-Fingerprint-Prediction
-```
-
-3. Create the Conda environment from the env.yml file: Navigate to the cloned project directory and run the following
-command to create the Conda environment with the required dependencies:
-
-```
-conda env create -f env.yml 
-```
-
-4. Activate the Conda environment: Once the environment is created, activate it with the following command:
-
-```
-conda activate Transformer-Based-Models-for-Chemical-Fingerprint-Prediction
-```
-
-5. Verify that the dependencies & environment were installed correctly.
-You can check if the environment was created successfully and if all dependencies were installed by running:
-
-```
-conda list
-conda env list
-```
-
-## Main Pipeline
-
-The pipeline is designed to be executed in three sequential steps from the command line. The `seed` is used as a key to link all steps, to guarantee consistency.
-
-#### **1. Data Pre-processing and Splitting**
-
-This script processes the `.mgf` file, generates the fingerprints, and creates the training, validation, and test splits, saving the artifacts in a specific folder according to the provided seed.
-
-```
-python -m scripts.production.01_preprocess_and_split --seed 1
-```
-
-
-#### **2. Model training**
-
-This script loads the corresponding `seed` data, instantiates the model, and executes the training according to the given parameters. To monitor your training, we recommend using TensorBoard, using the training logs file.
-
-```
-python -m scripts.production.02_train_model --seed 1
-```
-
-
-#### **3. Model evaluation**
-
-This script loads the checkpoint from a training session and evaluates its performance on the test set.
-
-```
-python -m scripts.production.03_evaluation --seed 1 --checkpoint_path path.to.the.checkpoint
-```
-
-**All scripts have additional flags that can and should be changed for greater customisation.**
 
 
 
